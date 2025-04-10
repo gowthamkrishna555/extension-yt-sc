@@ -23,16 +23,19 @@ A powerful Chrome Extension that detects and corrects spelling errors in real-ti
 git clone https://github.com/gowthamkrishna555/Spell-Checker-Extension.git
 cd Spell-Checker-Extension
 ```
+
 ### 2. Add your API Key
+
 -OPENAI_API_KEY=your_openai_api_key_here
 
 ### 3.Install Server Dependencies
+
 -cd server
 -npm install
 -node server.js
 
-
 ### 4. Load the Extension in Chrome
+
 -Open Chrome and go to chrome://extensions/
 
 -Enable Developer Mode in the top right
@@ -40,5 +43,3 @@ cd Spell-Checker-Extension
 -Click Load unpacked
 
 -Select the root folder Spellchecker-extension/
-
-
