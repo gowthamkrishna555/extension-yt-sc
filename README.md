@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 📝 Spell Checker Chrome Extension
 
 A powerful Chrome Extension that detects and corrects spelling errors in real-time across any webpage — including platforms like **Google Chat**, **Gmail**, and more — using the **OpenAI API**.
@@ -43,3 +44,6 @@ cd Spell-Checker-Extension
 -Click Load unpacked
 
 -Select the root folder Spellchecker-extension/
+=======
+# Spell-Checker-Extension
+>>>>>>> 9151172c274cc3cdb592d1c61004835d09f05460
