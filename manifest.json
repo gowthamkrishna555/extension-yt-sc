@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Spell Checker",
+  "version": "1.0",
+  "description": "Correct grammar and spelling anywhere using OpenAI.",
+  "permissions": [
+    "storage",
+    "scripting",
+    "http://localhost:3000/*"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+    
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [ "contentScript.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icon.png", "config.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
