@@ -27,6 +27,9 @@
         "domUtils.js", 
         "apiService.js", 
         "suggestionDropdown.js", 
+        "contextManager.js",
+        "dashboard.js",
+        "settingsPanel.js",
         "spellChecker.js", 
         "observer.js", 
         "contentScript.js"
