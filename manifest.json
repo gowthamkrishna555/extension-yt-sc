@@ -5,12 +5,12 @@
   "description": "Correct grammar and spelling anywhere using OpenAI.",
   "permissions": [
     "storage",
-    "scripting",
-    "http://localhost:3000/*"
+    "scripting"
+    
   ],
   "host_permissions": [
-    "<all_urls>"
-    
+    "<all_urls>",
+    "http://localhost:3000/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -23,8 +23,15 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": [ "contentScript.js"],
-      "run_at": "document_idle"
+      "js": [
+        "domUtils.js", 
+        "apiService.js", 
+        "suggestionDropdown.js", 
+        "spellChecker.js", 
+        "observer.js", 
+        "contentScript.js"
+      ],
+      "run_at": "document_end"
     }
   ],
   "web_accessible_resources": [
