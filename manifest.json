@@ -6,7 +6,6 @@
   "permissions": [
     "storage",
     "scripting"
-    
   ],
   "host_permissions": [
     "<all_urls>",
@@ -22,16 +21,15 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": [
+        "<all_urls>"
+      ],
       "js": [
-        "domUtils.js", 
-        "apiService.js", 
-        "suggestionDropdown.js", 
-        "contextManager.js",
-        "dashboard.js",
-        "settingsPanel.js",
-        "spellChecker.js", 
-        "observer.js", 
+        "domUtils.js",
+        "apiService.js",
+        "suggestionDropdown.js",
+        "spellChecker.js",
+        "observer.js",
         "contentScript.js"
       ],
       "run_at": "document_end"
@@ -39,8 +37,13 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["icon.png", "config.js"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "icon.png",
+        "config.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }
