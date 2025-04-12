@@ -20,7 +20,7 @@ A powerful Chrome Extension that detects and corrects spelling errors in real-ti
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/gowthamkrishna555/Spell-Checker-Extension.git
+git clone https://github.com/gowthamkrishna555/FixItBuddy-Extension.git
 cd Spell-Checker-Extension
 ```
 
