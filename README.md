@@ -21,7 +21,8 @@ A powerful Chrome Extension that detects and corrects spelling errors in real-ti
 
 ```bash
 git clone https://github.com/gowthamkrishna555/FixItBuddy-Extension.git
-cd Spell-Checker-Extension
+cd server
+npm start
 ```
 
 ### 2. Add your API Key
