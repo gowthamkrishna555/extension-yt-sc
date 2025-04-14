@@ -28,6 +28,10 @@
         "domUtils.js",
         "apiService.js",
         "suggestionDropdown.js",
+        "LiveChecker.js",
+        "UIComponents.js",
+        "SettingManager.js",
+        "customization.js",
         "spellChecker.js",
         "observer.js",
         "contentScript.js"
