@@ -28,6 +28,7 @@
         "domUtils.js",
         "apiService.js",
         "suggestionDropdown.js",
+        "showGrammarSuggestionDropdown.js",
         "LiveChecker.js",
         "UIComponents.js",
         "SettingManager.js",
