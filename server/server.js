@@ -37,7 +37,7 @@ app.post('/api/correct', async (req, res) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4.1-nano",
         messages: [{ role: "user", content: prompt }],
         temperature: 0,
       }),
@@ -76,7 +76,7 @@ app.post('/api/suggestions', async (req, res) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4.1-nano",
         messages: [{ role: "user", content: prompt }],
         temperature: 0,
       }),
@@ -133,7 +133,7 @@ app.post('/api/enhanced-analysis', async (req, res) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4.1-nano",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.2,
       }),
