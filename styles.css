@@ -55,3 +55,335 @@ body {
 .loading-icon {
   animation: spin 1s linear infinite; /* Spin animation */
 }
+
+/* Global Styles */
+:root {
+  --primary-color: #00a67d;
+  --error-color: #ff6b6b;
+  --border-color: #ccc;
+  --border-light: #eee;
+  --text-color: #333;
+  --text-light: #666;
+  --background-light: #f9f9f9;
+  --hover-background: #f5f5f5;
+  --shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Suggestion Dropdown */
+.spell-suggestion-dropdown {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  z-index: 10000;
+  box-shadow: var(--shadow);
+  min-width: 180px;
+  max-width: 300px;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+.spell-suggestion-dropdown .header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  background-color: var(--background-light);
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.spell-suggestion-dropdown .color-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+.spell-suggestion-dropdown .suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.spell-suggestion-dropdown .suggestion-item:hover {
+  background-color: var(--hover-background);
+}
+
+.spell-suggestion-dropdown .footer {
+  display: flex;
+  border-top: 1px solid var(--border-light);
+  background-color: var(--background-light);
+}
+
+.spell-suggestion-dropdown .action-button {
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+}
+
+.spell-suggestion-dropdown .action-button:hover {
+  background-color: var(--hover-background);
+}
+
+/* Correction UI */
+.spell-correction-ui {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  z-index: 10000;
+  box-shadow: var(--shadow);
+  max-width: 450px;
+  min-width: 300px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+.spell-correction-ui .header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--background-light);
+}
+
+.spell-correction-ui .header-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.spell-correction-ui .header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.spell-correction-ui .color-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+.spell-correction-ui .close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-light);
+}
+
+.spell-correction-ui .original-section {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-light);
+  text-decoration: line-through;
+  line-height: 1.5;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.spell-correction-ui .corrected-section {
+  padding: 12px 16px;
+  line-height: 1.5;
+  max-height: 100px;
+  overflow-y: auto;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.spell-correction-ui .action-section {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--background-light);
+}
+
+.spell-correction-ui .button-group {
+  display: flex;
+  gap: 8px;
+}
+
+.spell-correction-ui .action-right {
+  display: flex;
+  align-items: center;
+}
+
+.spell-correction-ui .accept-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.spell-correction-ui .dismiss-button {
+  background-color: transparent;
+  color: var(--text-light);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.spell-correction-ui .settings-button {
+  background-color: transparent;
+  color: #666;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+
+.spell-correction-ui .settings-button:hover {
+  color: #333;
+}
+
+/* Settings Menu */
+.spell-settings-menu {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  z-index: 10001;
+  box-shadow: var(--shadow);
+  min-width: 200px;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+.spell-settings-menu .style-info {
+  padding: 8px 16px;
+  background-color: var(--background-light);
+  border-bottom: 1px solid var(--border-light);
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.spell-settings-menu .menu-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.spell-settings-menu .menu-item:hover {
+  background-color: var(--hover-background);
+}
+
+.spell-settings-menu .toggle-switch {
+  width: 40px;
+  height: 20px;
+  background-color: #ddd;
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.spell-settings-menu .toggle-switch.active {
+  background-color: var(--primary-color);
+}
+
+.spell-settings-menu .toggle-switch::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s;
+}
+
+.spell-settings-menu .toggle-switch.active::before {
+  transform: translateX(20px);
+}
+
+/* Grammar Suggestion Dropdown */
+.grammar-suggestion-dropdown {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  z-index: 10000;
+  box-shadow: var(--shadow);
+  min-width: 200px;
+  max-width: 300px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+.grammar-suggestion-dropdown .header {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+.grammar-suggestion-dropdown .suggestion-content {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: 500;
+  color: #4285f4;
+}
+
+.grammar-suggestion-dropdown .suggestion-content:hover {
+  background-color: #f5f9ff;
+}
+
+.grammar-suggestion-dropdown .action-section {
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-light);
+}
+
+.grammar-suggestion-dropdown .action-button {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: var(--text-light);
+}
+
+.grammar-suggestion-dropdown .action-button:hover {
+  opacity: 0.7;
+}
+
+/* Type-specific colors */
+.type-spelling .color-indicator {
+  background-color: #ff6b6b;
+}
+
+.type-grammar .color-indicator {
+  background-color: #4caf50;
+}
+
+.type-style .color-indicator {
+  background-color: #2196f3;
+}

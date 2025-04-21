@@ -24,15 +24,15 @@
       "matches": [
         "<all_urls>"
       ],
+      "css": [
+        "styles.css"
+      ],
       "js": [
         "domUtils.js",
         "apiService.js",
         "suggestionDropdown.js",
         "showGrammarSuggestionDropdown.js",
-        "LiveChecker.js",
-        "UIComponents.js",
-        "SettingManager.js",
-        "customization.js",
+        "debounce.js",
         "applyStyleFilters.js",
         "positionElement.js",
         "runLiveSpellCheck.js",
@@ -46,6 +46,7 @@
         "spellChecker.js",
         "observer.js",
         "contentScript.js"
+        
       ],
       "run_at": "document_end"
     }

@@ -5,17 +5,6 @@ function showSettingsMenu(anchorElement) {
     
     const menu = document.createElement("div");
     menu.className = "spell-settings-menu";
-    Object.assign(menu.style, {
-      position: "absolute",
-      background: "#ffffff",
-      border: "1px solid #ccc",
-      borderRadius: "6px",
-      zIndex: "10001", // Above correction UI
-      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-      minWidth: "200px",
-      fontSize: "14px",
-      overflow: "hidden"
-    });
     
     // Settings options - Fixed: Use getter functions to access module variables
     const options = [
@@ -33,11 +22,7 @@ function showSettingsMenu(anchorElement) {
     
     // Add current style info
     const styleInfo = document.createElement("div");
-    styleInfo.style.padding = "8px 16px";
-    styleInfo.style.backgroundColor = "#f5f5f5";
-    styleInfo.style.borderBottom = "1px solid #eee";
-    styleInfo.style.fontSize = "12px";
-    styleInfo.style.color = "#666";
+    styleInfo.className = "style-info";
     styleInfo.textContent = `Current style: ${activeStyleName}`;
     menu.appendChild(styleInfo);
     
@@ -95,28 +80,16 @@ function showSettingsMenu(anchorElement) {
     
     options.forEach(option => {
       const item = document.createElement("div");
-      item.style.display = "flex";
-      item.style.justifyContent = "space-between";
-      item.style.alignItems = "center";
-      item.style.padding = "10px 16px";
-      item.style.cursor = "pointer";
-      item.style.borderBottom = "1px solid #eee";
+      item.className = "menu-item";
       
       const label = document.createElement("span");
       label.textContent = option.text;
       
-      // Create toggle switch instead of Yes/No button
       const toggleSwitch = document.createElement("div");
-      toggleSwitch.className = `toggle-switch ${option.state ? 'active' : ''}`;
-      
-      const toggleTrack = document.createElement("div");
-      toggleTrack.className = "toggle-switch-track";
-      
-      const toggleThumb = document.createElement("div");
-      toggleThumb.className = "toggle-switch-thumb";
-      
-      toggleSwitch.appendChild(toggleTrack);
-      toggleSwitch.appendChild(toggleThumb);
+      toggleSwitch.className = "toggle-switch";
+      if (option.state) {
+        toggleSwitch.classList.add("active");
+      }
       
       toggleSwitch.addEventListener("click", (e) => {
         e.stopPropagation(); // Prevent item click from firing
@@ -167,8 +140,6 @@ function showSettingsMenu(anchorElement) {
     
     // Position and show menu
     document.body.appendChild(menu);
-    
-    // Position smartly to ensure visibility
     positionElement(menu, anchorElement);
     
     // Close when clicking outside
@@ -182,4 +153,5 @@ function showSettingsMenu(anchorElement) {
     console.error("Error showing settings menu:", error);
   }
 }
+
 window.showSettingsMenu = showSettingsMenu;

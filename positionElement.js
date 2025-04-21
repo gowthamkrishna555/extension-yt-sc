@@ -6,47 +6,47 @@
 function positionElement(element, anchor) {
     try {
       const rect = anchor.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
       
-      // Initial positioning
+      // Initial positioning below the anchor
       element.style.top = `${window.scrollY + rect.bottom + 5}px`;
-      element.style.left = `${window.scrollX + rect.left - 50}px`;
+      element.style.left = `${window.scrollX + rect.left}px`;
       
-      // First, make sure the element is in the viewport initially to get its dimensions
-      ensureElementInViewport(element);
-      
-      // Now check and adjust to make sure it's fully visible
-      function ensureElementInViewport(elem) {
-        // Get current dimensions and positions
-        const elemRect = elem.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+      // Get element dimensions after it's in the DOM
+      setTimeout(() => {
+        const elemRect = element.getBoundingClientRect();
         
         // Horizontal adjustment
-        if (elemRect.right > viewportWidth) {
-          const newLeft = Math.max(10, window.scrollX + viewportWidth - elemRect.width - 10);
-          elem.style.left = `${newLeft}px`;
-        } else if (elemRect.left < 0) {
-          elem.style.left = `${window.scrollX + 10}px`;
+        if (elemRect.right > viewportWidth - 10) {
+          // If element is wider than viewport, align to left edge
+          if (elemRect.width > viewportWidth - 20) {
+            element.style.left = `${window.scrollX + 10}px`;
+            element.style.width = `${viewportWidth - 20}px`;
+          } else {
+            // Otherwise, align to right edge
+            element.style.left = `${window.scrollX + viewportWidth - elemRect.width - 10}px`;
+          }
         }
         
-        // Vertical adjustment - if it doesn't fit below, place it above
-        if (elemRect.bottom > viewportHeight) {
-          // Check if enough room above the anchor
-          if (rect.top > elemRect.height) {
+        // Vertical adjustment
+        if (elemRect.bottom > viewportHeight - 10) {
+          // Check if there's enough space above the anchor
+          if (rect.top > elemRect.height + 10) {
             // Place above the anchor
-            elem.style.top = `${window.scrollY + rect.top - elemRect.height - 5}px`;
+            element.style.top = `${window.scrollY + rect.top - elemRect.height - 5}px`;
           } else {
-            // Not enough room above either, place at the maximum available space from the top
-            elem.style.top = `${window.scrollY + Math.max(10, viewportHeight - elemRect.height - 10)}px`;
+            // Not enough space above, place at the bottom of the viewport
+            element.style.top = `${window.scrollY + viewportHeight - elemRect.height - 10}px`;
             
-            // If the element is taller than the viewport, set a max-height and enable scrolling
+            // If the element is taller than the available space, enable scrolling
             if (elemRect.height > viewportHeight - 20) {
-              elem.style.maxHeight = `${viewportHeight - 40}px`;
-              elem.style.overflowY = 'auto';
+              element.style.maxHeight = `${viewportHeight - 40}px`;
+              element.style.overflowY = 'auto';
             }
           }
         }
-      }
+      }, 0);
     } catch (error) {
       console.error("Error positioning element:", error);
     }

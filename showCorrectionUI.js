@@ -5,45 +5,20 @@ function showCorrectionUI(originalText, correctedText, textElement, anchorElemen
       
       const ui = document.createElement("div");
       ui.className = "spell-correction-ui";
-      Object.assign(ui.style, {
-        position: "absolute",
-        background: "#ffffff",
-        border: "1px solid #ccc",
-        borderRadius: "8px",
-        zIndex: "10000",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-        maxWidth: "450px",
-        minWidth: "300px",
-        fontSize: "14px",
-        fontFamily: "Arial, sans-serif",
-        overflow: "hidden"
-      });
       
-      // Header section with title and close button
+      // Create header
       const header = document.createElement("div");
-      Object.assign(header.style, {
-        padding: "12px 16px",
-        borderBottom: "1px solid #eee",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: "#f9f9f9"
-      });
+      header.className = "header";
       
       const headerLeft = document.createElement("div");
-      headerLeft.style.display = "flex";
-      headerLeft.style.alignItems = "center";
+      headerLeft.className = "header-left";
       
-      // Color indicator for correctness
+      const headerRight = document.createElement("div");
+      headerRight.className = "header-right";
+      
+      // Add color indicator and text to header left
       const colorIndicator = document.createElement("span");
-      Object.assign(colorIndicator.style, {
-        width: "20px",
-        height: "20px",
-        borderRadius: "50%",
-        backgroundColor: "#ff6b6b", // Red for spelling/grammar
-        marginRight: "8px",
-        display: "inline-block"
-      });
+      colorIndicator.className = "color-indicator";
       
       // Get active writing style name to display
       let activeStyleName = "Unknown";
@@ -59,76 +34,42 @@ function showCorrectionUI(originalText, correctedText, textElement, anchorElemen
       headerLeft.appendChild(colorIndicator);
       headerLeft.appendChild(headerText);
       
-      // Close button
+      // Create close button in header right
       const closeBtn = document.createElement("button");
+      closeBtn.className = "close-button";
       closeBtn.innerHTML = "&#10005;"; // X symbol
-      Object.assign(closeBtn.style, {
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        fontSize: "16px",
-        color: "#666"
-      });
       closeBtn.addEventListener("click", () => ui.remove());
       
+      headerRight.appendChild(closeBtn);
+      
       header.appendChild(headerLeft);
-      header.appendChild(closeBtn);
+      header.appendChild(headerRight);
       ui.appendChild(header);
       
       // Original text section
       const originalSection = document.createElement("div");
+      originalSection.className = "original-section";
       originalSection.textContent = originalText;
-      Object.assign(originalSection.style, {
-        padding: "12px 16px",
-        borderBottom: "1px solid #eee",
-        color: "#666",
-        textDecoration: "line-through",
-        lineHeight: "1.5",
-        maxHeight: "100px",
-        overflowY: "auto"
-      });
       ui.appendChild(originalSection);
       
       // Corrected text section
       const correctedSection = document.createElement("div");
+      correctedSection.className = "corrected-section";
       correctedSection.textContent = correctedText;
-      Object.assign(correctedSection.style, {
-        padding: "12px 16px",
-        lineHeight: "1.5",
-        maxHeight: "100px",
-        overflowY: "auto",
-        color: "#333",
-        borderBottom: "1px solid #eee"
-      });
       ui.appendChild(correctedSection);
       
       // Action buttons section
       const actionSection = document.createElement("div");
-      Object.assign(actionSection.style, {
-        padding: "12px 16px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: "#f9f9f9"
-      });
+      actionSection.className = "action-section";
       
       // Button group on the left (Accept & Dismiss)
       const buttonGroup = document.createElement("div");
-      buttonGroup.style.display = "flex";
+      buttonGroup.className = "button-group";
       
       // Accept button
       const acceptBtn = document.createElement("button");
+      acceptBtn.className = "accept-button";
       acceptBtn.textContent = "Accept";
-      Object.assign(acceptBtn.style, {
-        backgroundColor: "#00a67d",
-        color: "white",
-        border: "none",
-        borderRadius: "4px",
-        padding: "8px 12px",
-        cursor: "pointer",
-        marginRight: "8px",
-        fontWeight: "500"
-      });
       acceptBtn.addEventListener("click", () => {
         // Apply the correction
         if (textElement.isContentEditable) {
@@ -141,43 +82,52 @@ function showCorrectionUI(originalText, correctedText, textElement, anchorElemen
       
       // Dismiss button
       const dismissBtn = document.createElement("button");
+      dismissBtn.className = "dismiss-button";
       dismissBtn.textContent = "Dismiss";
-      Object.assign(dismissBtn.style, {
-        backgroundColor: "transparent",
-        color: "#666",
-        border: "1px solid #ddd",
-        borderRadius: "4px",
-        padding: "8px 12px",
-        cursor: "pointer"
-      });
       dismissBtn.addEventListener("click", () => ui.remove());
       
       buttonGroup.appendChild(acceptBtn);
       buttonGroup.appendChild(dismissBtn);
       
-      // Settings button on the right
+      // Right side container for settings
+      const actionRight = document.createElement("div");
+      actionRight.className = "action-right";
+      
+      // Settings button
       const settingsBtn = document.createElement("button");
+      settingsBtn.className = "settings-button";
       settingsBtn.innerHTML = "&#9881;"; // Gear icon
-      Object.assign(settingsBtn.style, {
-        backgroundColor: "transparent",
-        color: "#666",
-        border: "1px solid #ddd",
-        borderRadius: "4px",
-        padding: "8px 12px",
-        cursor: "pointer"
-      });
       settingsBtn.addEventListener("click", () => {
         // Show settings dropdown/menu
         showSettingsMenu(settingsBtn);
       });
       
+      actionRight.appendChild(settingsBtn);
       actionSection.appendChild(buttonGroup);
-      actionSection.appendChild(settingsBtn);
+      actionSection.appendChild(actionRight);
       ui.appendChild(actionSection);
       
       // Position the UI
       document.body.appendChild(ui);
-      positionElement(ui, anchorElement);
+      const rect = anchorElement.getBoundingClientRect();
+      const uiRect = ui.getBoundingClientRect();
+      
+      // Calculate position to ensure UI stays within viewport
+      let top = window.scrollY + rect.bottom + 5;
+      let left = window.scrollX + rect.left;
+      
+      // Adjust horizontal position if UI would go off-screen
+      if (left + uiRect.width > window.innerWidth) {
+        left = window.innerWidth - uiRect.width - 10;
+      }
+      
+      // Adjust vertical position if UI would go off-screen
+      if (top + uiRect.height > window.innerHeight + window.scrollY) {
+        top = window.scrollY + rect.top - uiRect.height - 5;
+      }
+      
+      ui.style.top = `${Math.max(window.scrollY + 5, top)}px`;
+      ui.style.left = `${Math.max(10, left)}px`;
       
       // Close when clicking outside
       document.addEventListener("click", function clickOutside(e) {
@@ -190,4 +140,5 @@ function showCorrectionUI(originalText, correctedText, textElement, anchorElemen
       console.error("Error showing correction UI:", error);
     }
   }
-window.showCorrectionUI = showCorrectionUI;
+  
+  window.showCorrectionUI = showCorrectionUI;

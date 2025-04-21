@@ -1,30 +1,55 @@
- /**
-   * Positions the grammar suggestion dropdown near the target element
-   * @param {HTMLElement} dropdown - The dropdown element
-   * @param {HTMLElement} targetElement - The element with the error
-   */
- function positionGrammarDropdown(dropdown, targetElement) {
+/**
+ * Positions the grammar suggestion dropdown near the target element
+ * @param {HTMLElement} dropdown - The dropdown element
+ * @param {HTMLElement} targetElement - The element with the error
+ */
+function positionGrammarDropdown(dropdown, targetElement) {
+  try {
     const rect = targetElement.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
     
-    // Position dropdown below the error
+    // Initial positioning below the target
     dropdown.style.top = `${window.scrollY + rect.bottom + 5}px`;
     dropdown.style.left = `${window.scrollX + rect.left}px`;
     
-    // Ensure dropdown is in viewport
+    // Get dropdown dimensions after it's in the DOM
     setTimeout(() => {
       const dropdownRect = dropdown.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
       
       // Horizontal adjustment
       if (dropdownRect.right > viewportWidth - 10) {
-        dropdown.style.left = `${window.scrollX + viewportWidth - dropdownRect.width - 10}px`;
+        // If dropdown is wider than viewport, align to left edge
+        if (dropdownRect.width > viewportWidth - 20) {
+          dropdown.style.left = `${window.scrollX + 10}px`;
+          dropdown.style.width = `${viewportWidth - 20}px`;
+        } else {
+          // Otherwise, align to right edge
+          dropdown.style.left = `${window.scrollX + viewportWidth - dropdownRect.width - 10}px`;
+        }
       }
       
-      // Vertical adjustment - if it doesn't fit below, place it above
+      // Vertical adjustment
       if (dropdownRect.bottom > viewportHeight - 10) {
-        dropdown.style.top = `${window.scrollY + rect.top - dropdownRect.height - 5}px`;
+        // Check if there's enough space above the target
+        if (rect.top > dropdownRect.height + 10) {
+          // Place above the target
+          dropdown.style.top = `${window.scrollY + rect.top - dropdownRect.height - 5}px`;
+        } else {
+          // Not enough space above, place at the bottom of the viewport
+          dropdown.style.top = `${window.scrollY + viewportHeight - dropdownRect.height - 10}px`;
+          
+          // If the dropdown is taller than the available space, enable scrolling
+          if (dropdownRect.height > viewportHeight - 20) {
+            dropdown.style.maxHeight = `${viewportHeight - 40}px`;
+            dropdown.style.overflowY = 'auto';
+          }
+        }
       }
     }, 0);
+  } catch (error) {
+    console.error("Error positioning grammar dropdown:", error);
   }
+}
+
 window.positionGrammarDropdown = positionGrammarDropdown;
