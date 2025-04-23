@@ -25,7 +25,7 @@ A powerful Chrome Extension with two main functionalities:
 
 ```bash
 git clone https://github.com/gowthamkrishna555/extension-yt-sc.git
-cd your-extension-name
+cd extension-yt-sc
 ```
 
 ### 2. Create a `.env` File
