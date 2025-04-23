@@ -33,6 +33,7 @@ cd extension-yt-sc
 Add your API keys:
 
 ```env
+# backend/.env
 OPENAI_API_KEY=your_openai_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
