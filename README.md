@@ -24,7 +24,7 @@ A powerful Chrome Extension with two main functionalities:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/your-extension-name.git
+git clone https://github.com/gowthamkrishna555/extension-yt-sc.git
 cd your-extension-name
 ```
 
@@ -40,8 +40,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ### 3. Install Server Dependencies
 
 ```bash
-cd server
-npm install
+cd backend
 npm install express cors axios youtube-transcript dotenv
 node server.js
 ```
