@@ -1,25 +1,28 @@
 {
   "manifest_version": 3,
-  "name": "Spell Checker",
+  "name": "YouTube Video Summarizer & Spell Checker",
   "version": "1.0",
-  "description": "Correct grammar and spelling anywhere using OpenAI.",
-  "permissions": [
-    "storage",
-    "scripting"
-  ],
+  "description": "Summarizes YouTube videos and corrects grammar/spelling anywhere",
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
   "host_permissions": [
-    "<all_urls>",
-    "http://localhost:3000/*"
+    "https://www.youtube.com/*", 
+    "http://localhost:3000/*",
+    "<all_urls>"
   ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icon.png",
-      "48": "icon.png",
-      "128": "icon.png"
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
     }
   },
   "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["youtube-transcript.js", "content.js"],
+      "css": ["styles.css"]
+    },
     {
       "matches": [
         "<all_urls>"
@@ -46,11 +49,15 @@
         "spellChecker.js",
         "observer.js",
         "contentScript.js"
-        
       ],
       "run_at": "document_end"
     }
   ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "web_accessible_resources": [
     {
       "resources": [
