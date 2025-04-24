@@ -282,3 +282,25 @@ window.insertSpellCheckButton = window.SpellChecker.insertSpellCheckButtons;
 window.showNoCorrectionsNeededMessage =
   window.SpellChecker.showNoCorrectionsNeededMessage;
 window.spellChecker = window.SpellChecker;
+
+function initializeSpellChecker() {
+  // Create spell checker container
+  const container = document.createElement('div');
+  container.className = 'spell-checker-container';
+  document.body.appendChild(container);
+
+  // Add active class to body
+  document.body.classList.add('spell-checker-active');
+
+  // Initialize spell checker
+  if (window.SpellChecker) {
+    window.SpellChecker.setEnabled(true);
+  }
+}
+
+// Call initialization when document is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeSpellChecker);
+} else {
+  initializeSpellChecker();
+}

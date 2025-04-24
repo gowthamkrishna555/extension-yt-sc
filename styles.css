@@ -2,6 +2,11 @@ body {
     font-family: sans-serif;
     padding: 10px;
     width: 300px;
+    min-width: 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    position: relative !important;
   }
   
   textarea {
@@ -131,17 +136,20 @@ body {
 
 /* Correction UI */
 .spell-correction-ui {
-  position: absolute;
+  position: fixed;
+  z-index: 10000;
   background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  z-index: 10000;
   box-shadow: var(--shadow);
   max-width: 450px;
   min-width: 300px;
   font-size: 14px;
   font-family: Arial, sans-serif;
   overflow: hidden;
+  pointer-events: auto;
+  max-height: 80vh;
+  transform-origin: top left;
 }
 
 .spell-correction-ui .header {
@@ -604,3 +612,249 @@ body {
 .summarizer-mini-box .restore-summary-btn:hover {
   background-color: #1765cc;
 }
+
+/* Base styles for contenteditable elements */
+[contenteditable="true"] {
+  min-height: 100px;
+  width: 100%;
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* Spell checker highlight styles */
+.highlight-suggest {
+  display: inline;
+  position: relative;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  box-sizing: border-box;
+  text-decoration: none;
+  white-space: inherit;
+  line-height: inherit;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+/* Ensure parent containers maintain their size */
+[data-spell-attached="true"] {
+  min-height: inherit;
+  height: auto;
+  width: 100%;
+  display: block;
+  position: relative;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+/* Spell checker UI positioning */
+.spell-correction-ui {
+  position: fixed;
+  z-index: 10000;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  max-width: 450px;
+  min-width: 300px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  pointer-events: auto;
+  max-height: 80vh;
+  transform-origin: top left;
+}
+
+/* Ensure text containers don't collapse */
+.text-container {
+  min-height: 100px;
+  width: 100%;
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+}
+
+/* Prevent layout shifts when spell checker is active */
+.spell-checker-active {
+  min-height: inherit !important;
+  height: auto !important;
+  width: 100% !important;
+  display: block !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+/* Ensure proper text wrapping */
+[contenteditable="true"] *,
+.highlight-suggest * {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Spell checker container isolation */
+.spell-checker-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: visible;
+}
+
+/* Spell checker UI */
+.spell-correction-ui {
+  position: fixed;
+  z-index: 10000;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  max-width: 450px;
+  min-width: 300px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  pointer-events: auto;
+  max-height: 80vh;
+  transform-origin: top left;
+}
+
+/* Highlight styles */
+.highlight-suggest {
+  position: relative;
+  display: inline;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  box-sizing: border-box;
+  text-decoration: none;
+  white-space: inherit;
+  line-height: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  pointer-events: auto;
+}
+
+/* Ensure website layout is not affected */
+body.spell-checker-active {
+  overflow: auto !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Prevent layout shifts */
+[contenteditable="true"] {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  min-height: 100px !important;
+  box-sizing: border-box !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  white-space: pre-wrap !important;
+}
+
+/* Ensure spell checker UI doesn't affect layout */
+.spell-suggestion-dropdown,
+.grammar-suggestion-dropdown,
+.spell-settings-menu {
+  position: fixed !important;
+  z-index: 10001;
+  pointer-events: auto;
+}
+
+/* Prevent spell checker from affecting website layout */
+body {
+  min-width: 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  position: relative !important;
+}
+
+/* Ensure website content maintains its size */
+#root, 
+main, 
+.container, 
+.content {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  overflow-x: auto !important;
+}
+
+/* Spell checker container */
+.spell-checker-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: visible;
+}
+
+/* Ensure website content maintains its size */
+#root, 
+main, 
+.container, 
+.content {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  overflow-x: auto !important;
+}
+
+/* Spell checker UI elements */
+.spell-correction-ui,
+.spell-suggestion-dropdown,
+.grammar-suggestion-dropdown,
+.spell-settings-menu {
+  position: fixed !important;
+  z-index: 10000;
+  pointer-events: auto;
+}
+
+/* Highlight styles */
+.highlight-suggest {
+  position: relative;
+  display: inline;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  box-sizing: border-box;
+  text-decoration: none;
+  white-space: inherit;
+  line-height: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  pointer-events: auto;
+}
+
+/* Ensure contenteditable elements maintain their size */
+[contenteditable="true"] {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  min-height: 100px !important;
+  box-sizing: border-box !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  white-space: pre-wrap !important;
+}
+
