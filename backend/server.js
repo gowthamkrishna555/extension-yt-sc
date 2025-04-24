@@ -114,9 +114,12 @@ app.post('/api/suggestions', async (req, res) => {
 app.post('/api/enhanced-analysis', async (req, res) => {
   try {
     const { text } = req.body;
-    
-    if (!text) {
-      return res.status(400).json({ error: 'Text parameter is required' });
+
+    console.log("📩 Received text:", text);
+
+    if (!text || text.trim().length < 10) {
+      console.warn("⚠️ Insufficient text provided.");
+      return res.status(400).json({ error: 'Text parameter is required and must be at least 10 characters long' });
     }
 
     const prompt = `Perform a comprehensive analysis of the following text, identifying issues related to spelling, grammar, and style/clarity. Return your analysis as a JSON object with the following structure:
@@ -131,9 +134,11 @@ app.post('/api/enhanced-analysis', async (req, res) => {
         {"word": "problematic word or phrase", "position": approximate position, "issue": "description of style issue", "suggestions": ["alternative1", "alternative2"]}
       ]
     }
-    
+
     Text to analyze: "${text}"`;
-    
+
+    console.log("📤 Sending prompt to OpenAI API...");
+
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -148,24 +153,36 @@ app.post('/api/enhanced-analysis', async (req, res) => {
     });
 
     const data = await response.json();
-    
+    console.log("✅ OpenAI response received.");
+
     if (data.error) {
-      console.error("OpenAI API error:", data.error);
+      console.error("❌ OpenAI API error:", data.error);
       return res.status(500).json({ error: data.error.message });
     }
 
+    const content = data.choices?.[0]?.message?.content;
+    console.log("📨 Raw content from OpenAI:\n", content);
+
+    if (!content || !content.trim().startsWith('{')) {
+      console.error("⚠️ OpenAI response is not valid JSON.");
+      return res.status(500).json({ error: 'OpenAI did not return a valid JSON structure.' });
+    }
+
     try {
-      const enhancedAnalysis = JSON.parse(data.choices?.[0]?.message?.content);
+      const enhancedAnalysis = JSON.parse(content);
+      console.log("✅ Parsed JSON:", enhancedAnalysis);
       res.json(enhancedAnalysis);
     } catch (parseError) {
-      console.error("Error parsing JSON from OpenAI:", parseError);
+      console.error("❌ Error parsing JSON from OpenAI:", parseError);
       res.status(500).json({ error: 'Invalid response format from OpenAI' });
     }
   } catch (error) {
-    console.error('Error in /api/enhanced-analysis:', error);
+    console.error('🔥 Error in /api/enhanced-analysis:', error);
     res.status(500).json({ error: 'Server error processing enhanced analysis request' });
   }
 });
+
+
 
 // YouTube Transcript API Endpoints
 
