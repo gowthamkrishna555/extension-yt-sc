@@ -24,8 +24,8 @@ A powerful Chrome Extension with two main functionalities:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/your-extension-name.git
-cd your-extension-name
+git clone https://github.com/gowthamkrishna555/extension-yt-sc.git
+cd extension-yt-sc
 ```
 
 ### 2. Create a `.env` File
@@ -33,6 +33,7 @@ cd your-extension-name
 Add your API keys:
 
 ```env
+# backend/.env
 OPENAI_API_KEY=your_openai_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
@@ -40,8 +41,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ### 3. Install Server Dependencies
 
 ```bash
-cd server
-npm install
+cd backend
 npm install express cors axios youtube-transcript dotenv
 node server.js
 ```
