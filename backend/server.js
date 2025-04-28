@@ -200,34 +200,45 @@ app.get('/transcript', async (req, res) => {
 
     console.log(`Fetching transcript for video ID: ${videoId}`);
 
-    const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
+    try {
+      const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
+      console.log(`Transcript fetched successfully with ${transcriptArray.length} segments`);
 
-    console.log(`Transcript fetched successfully with ${transcriptArray.length} segments`);
+      const plainTranscript = transcriptArray.map(item => item.text).join(' ');
+      
+      const duration = transcriptArray.reduce((max, item) => {
+        const end = item.offset + (item.duration || 0);
+        return end > max ? end : max;
+      }, 0);    
+      
+      const lang = transcriptArray.length > 0 && transcriptArray[0].language ? 
+        transcriptArray[0].language : 'en';
 
-    const plainTranscript = transcriptArray.map(item => item.text).join(' ');
-    
-    const duration = transcriptArray.reduce((max, item) => {
-      const end = item.offset + (item.duration || 0);
-      return end > max ? end : max;
-    }, 0);    
+      res.json({
+        transcript: plainTranscript,
+        timestampedTranscript: transcriptArray,
+        duration: duration,
+        lang: lang
+      });
 
-    
-    const lang = transcriptArray.length > 0 && transcriptArray[0].language ? 
-      transcriptArray[0].language : 'en';
-
-    res.json({
-      transcript: plainTranscript,
-      timestampedTranscript: transcriptArray,
-      duration: duration,
-      lang: lang
-    });
-
-    console.log("Transcript response sent");
+      console.log("Transcript response sent");
+    } catch (transcriptError) {
+      console.error('Error fetching transcript:', transcriptError);
+      
+      // Return a structured error indicating transcript is unavailable
+      res.status(404).json({
+        error: "Failed to fetch transcript",
+        details: transcriptError.message,
+        noTranscriptAvailable: true
+      });
+    }
   } catch (error) {
-    console.error('Error fetching transcript:', error.message);
+    console.error('Unexpected error in transcript endpoint:', error);
     console.error('Error details:', error.stack);
-    console.error('Error fetching transcript:', error);
-    res.status(500).json({error: "Failed to fetch transcript", details: error.message });
+    res.status(500).json({
+      error: "Server error processing transcript request", 
+      details: error.message 
+    });
   }
 });
 

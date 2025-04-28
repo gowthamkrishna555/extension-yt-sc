@@ -3,7 +3,7 @@ class YouTubeTranscript {
     this.baseUrl = 'https://www.youtube.com';
   }
 
-async fetchTranscript(videoId) {
+  async fetchTranscript(videoId) {
     try {        
       const inPageTranscript = await this.extractTranscriptFromPage();
       if (inPageTranscript) {
@@ -12,8 +12,8 @@ async fetchTranscript(videoId) {
       
       return await this.fetchTranscriptFromApi(videoId);
     } catch (error) {
-      console.error('Error fetching transcript:', error);
-      throw new Error('Failed to fetch transcript. This video might not have captions available.');
+      console.error(`[YoutubeTranscript] 🚨 ${error.message} (${videoId})`);
+      throw error; // Rethrow the error with the enhanced message
     }
   }
 
@@ -49,7 +49,7 @@ async fetchTranscript(videoId) {
       
       const captionsTrack = this.findCaptionsTrack(playerConfig);
       if (!captionsTrack) {
-        throw new Error('No captions track found for this video');
+        throw new Error('Transcript is disabled on this video');
       }
       
       const captionsResponse = await fetch(captionsTrack);
@@ -59,7 +59,11 @@ async fetchTranscript(videoId) {
     } catch (error) {
       console.error('Error in fetchTranscriptFromApi:', error);
       
-      return this.extractFromVideoInfo(videoId);
+      try {
+        return await this.extractFromVideoInfo(videoId);
+      } catch (innerError) {
+        throw new Error('Transcript is disabled on this video');
+      }
     }
   }
   
@@ -140,6 +144,10 @@ async fetchTranscript(videoId) {
         transcript[transcript.length - 1].totalDuration = totalDuration;
       }
   
+      if (transcript.length === 0) {
+        throw new Error('No transcript content found');
+      }
+
       return transcript;
     } catch (error) {
       console.error('Error parsing captions XML:', error);

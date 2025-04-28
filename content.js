@@ -382,6 +382,31 @@ async function handleSummarize() {
     }
     
     const transcriptData = await transcriptResponse.json();
+
+    if (!transcriptResponse.ok || transcriptData.error) {
+      // Handle transcript not available case
+      if (transcriptData.noTranscriptAvailable) {
+        content.innerHTML = `
+          <div class="summarizer-error-container">
+            <p class="summarizer-error">Transcript not available for this video</p>
+            <p class="summarizer-error-details">We couldn't generate a summary because this video doesn't have an available transcript or captions.</p>
+            <p class="summarizer-suggestion">Suggestions:</p>
+            <ul>
+              <li>Try another video that has captions enabled</li>
+              <li>Check if the video owner has provided subtitles</li>
+              <li>For educational content, many creators enable transcripts</li>
+            </ul>
+          </div>
+        `;
+        summarizeBtn.disabled = false;
+        return;
+      }
+      throw new Error(transcriptData.error || 'Failed to fetch transcript from server');
+    }
+    
+    if (!transcriptData.transcript || transcriptData.transcript.length < 20) {
+      throw new Error('Transcript is too short or empty');
+    }
     
     const descriptionTimestamps = await Promise.resolve(extractTimestampsFromDescription());
 
@@ -399,7 +424,8 @@ async function handleSummarize() {
         videoTitle: videoTitle,
         existingTimestamps: descriptionTimestamps,
         duration: transcriptData.duration,
-        lang: transcriptData.lang
+        lang: transcriptData.lang,
+        timestampedTranscript: transcriptData.timestampedTranscript
       })
     });
     
