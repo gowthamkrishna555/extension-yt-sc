@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000;
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-     ? ['chrome-extension://*', 'https://www.youtube.com','https://www.gmail.com']
+     ? ['chrome-extension://*', 'https://www.youtube.com','https://mail.google.com', 'https://www.google.com']
   : '*',
   methods: ['GET', 'POST'],
   credentials: true
