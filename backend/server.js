@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000;
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-     ? ['chrome-extension://*', 'https://www.youtube.com']
+     ? ['chrome-extension://*', 'https://www.youtube.com','']
   : '*',
   methods: ['GET', 'POST'],
   credentials: true
@@ -198,7 +198,11 @@ app.get('/transcript', async (req, res) => {
       return res.status(400).json({ error: "Video ID is required" });
     }
 
+    console.log(`Fetching transcript for video ID: ${videoId}`);
+
     const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
+
+    console.log(`Transcript fetched successfully with ${transcriptArray.length} segments`);
 
     const plainTranscript = transcriptArray.map(item => item.text).join(' ');
     
@@ -220,8 +224,10 @@ app.get('/transcript', async (req, res) => {
 
     console.log("Transcript response sent");
   } catch (error) {
+    console.error('Error fetching transcript:', error.message);
+    console.error('Error details:', error.stack);
     console.error('Error fetching transcript:', error);
-    res.status(500).json({ error: "Failed to fetch transcript" });
+    res.status(500).json({error: "Failed to fetch transcript", details: error.message });
   }
 });
 
