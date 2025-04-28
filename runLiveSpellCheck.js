@@ -5,7 +5,7 @@
  */
 async function runLiveSpellCheck(box, button) {
   try {
-    if (!window.spellChecker.isEnabled || !box) return;  
+    if (!window.spellChecker.isEnabled || !box) return;
 
     const originalText = box.innerText || box.value || "";
     if (!originalText.trim()) {
@@ -18,17 +18,16 @@ async function runLiveSpellCheck(box, button) {
 
     // Now get enhanced analysis with different types of issues
     const analysis = await ApiService.fetchEnhancedAnalysis(originalText);
-    
+
     // Reset loading state if button exists
     if (button) {
       setButtonLoadingState(button, false);
     }
-    
+
     if (!analysis) return;
-    
+
     // Apply style-based filtering to the analysis results
     const styledAnalysis = applyStyleFilters(analysis, originalText);
-
     // Only support contenteditable for now
     if (!box.isContentEditable) return;
 
@@ -38,7 +37,6 @@ async function runLiveSpellCheck(box, button) {
     // Replace incorrect words with highlighted spans
     let modifiedHTML = box.innerText;
     const replacements = [];
-
     // Process spelling errors (red underline)
     styledAnalysis.spelling.forEach(({ word, suggestions }) => {
       processReplacement(word, suggestions, "spelling", "#ff6b6b");
@@ -46,7 +44,7 @@ async function runLiveSpellCheck(box, button) {
 
     // Process grammar errors (green underline)
     styledAnalysis.grammar.forEach(({ word, suggestions }) => {
-      processReplacement(word, suggestions, "grammar", "#4caf50");
+       processReplacement(word, suggestions, "grammar", "#4caf50");
     });
 
     // Process style issues (blue underline)
@@ -54,6 +52,21 @@ async function runLiveSpellCheck(box, button) {
       processReplacement(word, suggestions, "style", "#2196f3");
     });
 
+    // function processReplacement(word, suggList, type, color) {
+    //   if (!word || !Array.isArray(suggList)) return;
+
+    //   try {
+    //     const regex = new RegExp(`\\b(${word})\\b`, "gi");
+    //     console.log("modifiedHTML", modifiedHTML);
+    //     modifiedHTML = modifiedHTML.replace(regex, (match) => {
+    //       const ssbuss = `sugg-${Math.random().toString(36).substr(2, 9)}`;
+    //       replacements.push({ ssbuss, original: match, suggList, type });
+    //       return `<span id="${ssbuss}" class="highlight-suggest" data-type="${type}" style="border-bottom: 2px dotted ${color}; cursor: pointer; padding: 0 2px; border-radius: 2px; transition: background 0.2s ease;">${match}</span>`;
+    //     });
+    //   } catch (regexError) {
+    //     console.warn("Error with regex replacement:", regexError);
+    //   }
+    // }
     function processReplacement(word, suggList, type, color) {
       if (!word || !Array.isArray(suggList)) return;
 
@@ -188,11 +201,11 @@ async function runLiveSpellCheck(box, button) {
 const debouncedRunLiveSpellCheck = debounce(runLiveSpellCheck, 500);
 
 // Update the event listeners to use the debounced version
-document.addEventListener('DOMContentLoaded', function() {
-  const inputBox = document.getElementById('inputBox');
+document.addEventListener("DOMContentLoaded", function () {
+  const inputBox = document.getElementById("inputBox");
   if (inputBox) {
-    inputBox.addEventListener('input', debouncedRunLiveSpellCheck);
+    inputBox.addEventListener("input", debouncedRunLiveSpellCheck);
   }
 });
 
-window.runLiveSpellCheck = runLiveSpellCheck; 
+window.runLiveSpellCheck = runLiveSpellCheck;
