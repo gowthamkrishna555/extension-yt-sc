@@ -10,7 +10,11 @@ const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: '*',  // In production, restrict this to your extension's origin
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['chrome-extension://*', 'moz-extension://*'] 
+    : '*',
+  methods: ['GET', 'POST'],
+  credentials: true
 }));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
@@ -472,6 +476,15 @@ app.get('/ping', (req, res) => {
 });
 
 // Start the server
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`Server running on port ${port}`);
+// });
+
+module.exports = app;
+
+if (process.env.NODE_ENV !== 'production') {
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
