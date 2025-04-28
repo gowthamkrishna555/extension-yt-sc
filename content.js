@@ -376,7 +376,7 @@ async function handleSummarize() {
       throw new Error('Could not find video ID');
     }
     
-    const transcriptResponse = await fetch(`http://localhost:3000/transcript?videoId=${videoId}`);
+    const transcriptResponse = await fetch(`https://extension-yt-sc.vercel.app/transcript?videoId=${videoId}`);
     if (!transcriptResponse.ok) {
       throw new Error('Failed to fetch transcript from server');
     }
@@ -389,7 +389,7 @@ async function handleSummarize() {
 
     console.log("Transcript data:", transcriptData); // Debug log
     
-    const summaryResponse = await fetch('http://localhost:3000/summarize', {
+    const summaryResponse = await fetch('https://extension-yt-sc.vercel.app/summarize', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

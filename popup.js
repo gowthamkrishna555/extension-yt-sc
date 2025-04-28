@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function checkServerConnection() {
   try {
-    const response = await fetch('http://localhost:3000/ping', { 
+    const response = await fetch('https://extension-yt-sc.vercel.app/ping', { 
       method: 'GET',
       signal: AbortSignal.timeout(3000)
     });

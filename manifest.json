@@ -6,7 +6,7 @@
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
   "host_permissions": [
     "https://www.youtube.com/*", 
-    "http://localhost:3000/*",
+    "https://extension-yt-sc.vercel.app/*",
     "<all_urls>"
   ],
   "action": {
