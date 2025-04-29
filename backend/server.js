@@ -221,7 +221,7 @@ app.post('/api/enhanced-analysis', async (req, res) => {
 
 // YouTube Transcript API Endpoints
 
-app.get('/transcript', async (req, res) => {
+app.get('/api/transcript', async (req, res) => {
   try {
     const { videoId } = req.query;
 
@@ -261,7 +261,7 @@ app.get('/transcript', async (req, res) => {
   }
 });
 
-app.post('/summarize', async (req, res) => {
+app.post('/api/summarize', async (req, res) => {
   console.log("Received POST request to summarize"); 
   try {
     const { transcript, videoTitle, existingTimestamps, duration, lang, timestampedTranscript } = req.body;
