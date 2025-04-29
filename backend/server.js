@@ -5,8 +5,6 @@ const axios = require('axios');
 const YouTubeTranscript = require('youtube-transcript').default;
 require('dotenv').config();
 
-console.log("ytTranscript keys:", Object.keys(ytTranscript));
-
 const app = express();
 const port = process.env.PORT || 3000;
 
