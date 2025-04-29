@@ -109,9 +109,11 @@ window.ApiService = (function () {
       if (!videoId || !videoId.trim()) {
         return null;
       }
+      console.log("Fetching transcript for videoId:", videoId);
   
       const serverUrl = `${API_BASE_URL}/transcript?videoId=${encodeURIComponent(videoId)}`;
-  
+      
+      console.log("Server URL:", serverUrl);
       const response = await fetch(serverUrl);
   
       if (!response.ok) {
