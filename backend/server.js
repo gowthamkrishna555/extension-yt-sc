@@ -5,6 +5,8 @@ const axios = require('axios');
 const { YouTubeTranscript } = require('youtube-transcript');
 require('dotenv').config();
 
+global.DOMParser = require('xmldom').DOMParser;
+
 const app = express();
 const port = process.env.PORT || 3000;
 
