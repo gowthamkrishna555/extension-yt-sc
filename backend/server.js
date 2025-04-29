@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const axios = require('axios');
-const { YouTubeTranscript } = require('youtube-transcript');
+const ytTranscript = require('youtube-transcript');
 require('dotenv').config();
 
 global.DOMParser = require('xmldom').DOMParser;
@@ -226,12 +226,13 @@ app.post('/api/enhanced-analysis', async (req, res) => {
 app.get('/transcript', async (req, res) => {
   try {
     const { videoId } = req.query;
+    console.log("ytTranscript keys:", Object.keys(ytTranscript));
 
     if (!videoId) {
       return res.status(400).json({ error: "Video ID is required" });
     }
 
-    const transcriptArray = await YouTubeTranscript.fetchTranscript(videoId);
+    const transcriptArray = await ytTranscript.YouTubeTranscript.fetchTranscript(videoId);
 
     const plainTranscript = transcriptArray.map(item => item.text).join(' ');
     
