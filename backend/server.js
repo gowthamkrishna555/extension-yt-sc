@@ -233,34 +233,34 @@ app.get('/transcript', async (req, res) => {
       return res.status(400).json({ error: "Video ID is required" });
     }
 
-    const transcriptArray = await ytTranscript.YouTubeTranscript.fetchTranscript(videoId);
-
-    const plainTranscript = transcriptArray.map(item => item.text).join(' ');
+    // Try fetching captions from YouTube API (fallback)
+    const url = `https://www.youtube.com/api/timedtext?lang=en&v=${videoId}`;
+    const response = await axios.get(url);
     
-    const duration = transcriptArray.reduce((max, item) => {
-      const end = item.offset + (item.duration || 0);
-      return end > max ? end : max;
-    }, 0);    
+    // Process the response if valid
+    if (response.status === 200) {
+      const transcriptArray = parseTranscriptXML(response.data);  // You'll need to parse the XML or JSON
+      const plainTranscript = transcriptArray.map(item => item.text).join(' ');
+      
+      const duration = transcriptArray.reduce((max, item) => {
+        const end = item.offset + (item.duration || 0);
+        return end > max ? end : max;
+      }, 0);    
 
-    
-    const lang = transcriptArray.length > 0 && transcriptArray[0].language ? 
-      transcriptArray[0].language : 'en';
+      res.json({
+        transcript: plainTranscript,
+        timestampedTranscript: transcriptArray,
+        duration: duration,
+        lang: 'en',
+      });
 
-    res.json({
-      transcript: plainTranscript,
-      timestampedTranscript: transcriptArray,
-      duration: duration,
-      lang: lang
-    });
-
-    console.log("Transcript response sent");
+      console.log("Transcript response sent");
+    } else {
+      throw new Error('No valid transcript data found');
+    }
   } catch (error) {
     console.error('Error fetching transcript:', error);
-    res.status(500).json({ 
-      error: "Failed to fetch transcript",
-      message: error.message,
-      stack: error.stack
-    });
+    res.status(500).json({ error: "Failed to fetch transcript", message: error.message });
   }
 });
 
