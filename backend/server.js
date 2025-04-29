@@ -224,43 +224,78 @@ app.post('/api/enhanced-analysis', async (req, res) => {
 // YouTube Transcript API Endpoints
 
 app.get('/transcript', async (req, res) => {
+  const startTime = Date.now();
+  console.log(`[${startTime}] Transcript request received`);
+  
   try {
     const { videoId } = req.query;
 
     if (!videoId) {
+      console.log('Missing videoId parameter');
       return res.status(400).json({ error: "Video ID is required" });
     }
 
     console.log(`Fetching transcript for video ID: ${videoId}`);
+    
+    // Set a timeout for the transcript fetch operation
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Transcript fetch timed out')), 25000);
+    });
+    
+    // Try to fetch the transcript with timeout
+    const transcriptPromise = YoutubeTranscript.fetchTranscript(videoId);
+    const transcriptArray = await Promise.race([transcriptPromise, timeoutPromise]);
+    
+    if (!transcriptArray || transcriptArray.length === 0) {
+      console.log(`No transcript found for video ID: ${videoId}`);
+      return res.status(404).json({ error: "No transcript found for this video" });
+    }
 
-    const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
+    console.log(`Transcript fetched with ${transcriptArray.length} segments`);
 
-    console.log(`Transcript fetched successfully with ${transcriptArray.length} segments`);
-
+    // Process transcript data
     const plainTranscript = transcriptArray.map(item => item.text).join(' ');
     
     const duration = transcriptArray.reduce((max, item) => {
       const end = item.offset + (item.duration || 0);
       return end > max ? end : max;
-    }, 0);    
-
+    }, 0);
     
     const lang = transcriptArray.length > 0 && transcriptArray[0].language ? 
       transcriptArray[0].language : 'en';
 
-    res.json({
+    const responseData = {
       transcript: plainTranscript,
       timestampedTranscript: transcriptArray,
       duration: duration,
       lang: lang
-    });
+    };
 
-    console.log("Transcript response sent");
+    console.log(`Transcript processed, sending response (${Date.now() - startTime}ms)`);
+    res.json(responseData);
   } catch (error) {
     console.error('Error fetching transcript:', error.message);
-    console.error('Error details:', error.stack);
-    console.error('Error fetching transcript:', error);
-    res.status(500).json({error: "Failed to fetch transcript", details: error.message });
+    
+    // Provide more specific error messages
+    if (error.message.includes('timed out')) {
+      return res.status(504).json({ 
+        error: "Transcript fetch timed out", 
+        details: "The request took too long to complete" 
+      });
+    }
+    
+    if (error.message.includes('Could not get transcripts')) {
+      return res.status(404).json({ 
+        error: "Transcript not available", 
+        details: "This video may not have captions or they are disabled" 
+      });
+    }
+    
+    return res.status(500).json({
+      error: "Failed to fetch transcript", 
+      details: error.message,
+      time: Date.now() - startTime
+    });
   }
 });
 
