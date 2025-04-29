@@ -6,6 +6,8 @@ const ytTranscript = require('youtube-transcript');
 require('dotenv').config();
 
 global.DOMParser = require('xmldom').DOMParser;
+console.log("ytTranscript keys:", Object.keys(ytTranscript));
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -226,7 +228,6 @@ app.post('/api/enhanced-analysis', async (req, res) => {
 app.get('/transcript', async (req, res) => {
   try {
     const { videoId } = req.query;
-    console.log("ytTranscript keys:", Object.keys(ytTranscript));
 
     if (!videoId) {
       return res.status(400).json({ error: "Video ID is required" });
