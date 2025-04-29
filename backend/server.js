@@ -8,11 +8,36 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
+// Middlewares
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-     ? ['chrome-extension://*', 'https://www.youtube.com','https://mail.google.com', 'https://www.google.com']
-  : '*',
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      'chrome-extension://',
+      'https://www.youtube.com',
+      'https://mail.google.com', 
+      'https://www.google.com'
+    ];
+    
+    // For development or if no origin provided (like postman)
+    if (!origin || process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    
+    // For production, check if the origin starts with any allowed origin
+    let isAllowed = false;
+    for (const allowedOrigin of allowedOrigins) {
+      if (origin.startsWith(allowedOrigin)) {
+        isAllowed = true;
+        break;
+      }
+    }
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
   methods: ['GET', 'POST'],
   credentials: true
 }));
@@ -25,7 +50,40 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = "gemini-2.0-flash";
 
+
+// Add this at the top of your server.js file
+
+// Detect if running on Vercel
+const isVercel = process.env.VERCEL === '1';
+
+// Adjust configurations based on environment
+const adjustForServerlessEnvironment = () => {
+  if (isVercel) {
+    console.log('Running in Vercel serverless environment');
+    
+    // Set timeouts for external API calls
+    require('axios').defaults.timeout = 20000; // 20 seconds timeout for all axios requests
+    
+    // Set Node.js memory options (only affects local development)
+    try {
+      process.env.NODE_OPTIONS = `${process.env.NODE_OPTIONS || ''} --max-old-space-size=1024`;
+    } catch (e) {
+      console.error('Could not set NODE_OPTIONS:', e.message);
+    }
+  } else {
+    console.log('Running in standard Node.js environment');
+  }
+};
+
+adjustForServerlessEnvironment();
+
+
+
 if (!OPENAI_API_KEY) {
+  console.error('Error: OpenAI API key not found. Please set it in .env file');
+}
+
+if (!GEMINI_API_KEY) {
   console.error('Error: OpenAI API key not found. Please set it in .env file');
 }
 
@@ -506,6 +564,14 @@ app.get('/ping', (req, res) => {
 module.exports = app;
 
 if (process.env.NODE_ENV !== 'production') {
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
+
+// At the end of your file, modify the listen section:
+if (!isVercel) {
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);

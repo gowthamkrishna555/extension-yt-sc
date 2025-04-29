@@ -1,7 +1,7 @@
 // Create a namespace for API services
 window.ApiService = (function () {
   // Base URL for the spell check API service
-  const API_BASE_URL = "https://extension-yt-gcdm4hcxy-gowtham-krishnas-projects.vercel.app";
+  const API_BASE_URL = "https://extension-yt-sc.vercel.app/api";
 
   /**
    * Fetches full text correction from the server
