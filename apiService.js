@@ -104,10 +104,71 @@ window.ApiService = (function () {
     }
   }
 
+  async function fetchTranscript(videoId) {
+    try {
+      if (!videoId || !videoId.trim()) {
+        return null;
+      }
+  
+      const serverUrl = `${API_BASE_URL}/transcript?videoId=${encodeURIComponent(videoId)}`;
+  
+      const response = await fetch(serverUrl);
+  
+      if (!response.ok) {
+        throw new Error(`Transcript server responded with status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      return data; // { transcript, timestampedTranscript, duration, lang }
+    } catch (err) {
+      console.error("Failed to fetch transcript:", err);
+      alert("Error fetching transcript. Please make sure the backend server is running and accessible.");
+      return null;
+    }
+  }
+
+  async function fetchSummary({ transcript, videoTitle, existingTimestamps, duration, lang, timestampedTranscript  }) {
+    try {
+      if (!transcript || !transcript.trim()) {
+        return null;
+      }
+  
+      const serverUrl = `${API_BASE_URL}/summarize`;
+  
+      const response = await fetch(serverUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          transcript,
+          videoTitle,
+          existingTimestamps,
+          duration,
+          lang,
+          timestampedTranscript 
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Summary server responded with status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      return data; // { title, summaryPoints, highlights }
+    } catch (err) {
+      console.error("Failed to generate summary:", err);
+      alert("Error generating summary. Please make sure the backend server is running.");
+      return null;
+    }
+  }
+  
   // Return public methods
   return {
     fetchFullCorrection,
     fetchSuggestions,
-    fetchEnhancedAnalysis
+    fetchEnhancedAnalysis,
+    fetchTranscript,
+    fetchSummary
   };
 })();

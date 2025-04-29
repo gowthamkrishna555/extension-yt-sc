@@ -376,12 +376,9 @@ async function handleSummarize() {
       throw new Error('Could not find video ID');
     }
     
-    const transcriptResponse = await fetch(`https://extension-yt-sc.vercel.app/transcript?videoId=${videoId}`);
-    if (!transcriptResponse.ok) {
-      throw new Error('Failed to fetch transcript from server');
-    }
+    const transcriptData = await ApiService.fetchTranscript(videoId);
+    if (!transcriptData) throw new Error('Transcript not available');
     
-    const transcriptData = await transcriptResponse.json();
     
     const descriptionTimestamps = await Promise.resolve(extractTimestampsFromDescription());
 
@@ -389,25 +386,17 @@ async function handleSummarize() {
 
     console.log("Transcript data:", transcriptData); // Debug log
     
-    const summaryResponse = await fetch('https://extension-yt-sc.vercel.app/summarize', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ 
-        transcript: transcriptData.transcript,
-        videoTitle: videoTitle,
-        existingTimestamps: descriptionTimestamps,
-        duration: transcriptData.duration,
-        lang: transcriptData.lang
-      })
+    const summaryData = await ApiService.fetchSummary({
+      transcript: transcriptData.transcript,
+      videoTitle: videoTitle,
+      existingTimestamps: descriptionTimestamps,
+      duration: transcriptData.duration,
+      lang: transcriptData.lang,
+      timestampedTranscript: transcriptData.timestampedTranscript 
     });
     
-    if (!summaryResponse.ok) {
-      throw new Error('Failed to generate summary');
-    }
+    if (!summaryData) throw new Error('Summary not received');
     
-    const summaryData = await summaryResponse.json();
     console.log("Received summary data:", summaryData); 
     
     let summaryHTML = `<div class="summary-container">`;

@@ -268,6 +268,7 @@ app.post('/summarize', async (req, res) => {
     console.log("Video Title:", videoTitle);
     console.log("Video Duration:", duration, "seconds");
     console.log("existingTimestamps:", existingTimestamps);
+    console.log("Received timestampedTranscript:", timestampedTranscript ? "yes" : "no");
     
     if (!transcript) {
       return res.status(400).json({ error: "Transcript is required" });
