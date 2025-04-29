@@ -9,14 +9,17 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/server.js",
-      "methods": ["GET", "POST", "OPTIONS"]
+      "dest": "server.js"
     }
   ],
   "functions": {
-    "server.js": {
+    "api/*.js": {
       "memory": 1024,
       "maxDuration": 60
     }
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "VERCEL": "1"
   }
 }
