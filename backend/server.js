@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const axios = require('axios');
+const ytTranscript = require('youtube-transcript');
 require('dotenv').config();
 
 const app = express();
@@ -228,8 +229,9 @@ app.get('/transcript', async (req, res) => {
       return res.status(400).json({ error: "Video ID is required" });
     }
 
-    const { fetchTranscript } = await import('youtube-transcript');
-    const transcriptArray = await fetchTranscript(videoId);
+    console.log('ytTranscript export keys:', Object.keys(ytTranscript));
+
+    const transcriptArray = await ytTranscript.YouTubeTranscript.fetchTranscript(videoId);
     const plainTranscript = transcriptArray.map(item => item.text).join(' ');
     
     const duration = transcriptArray.reduce((max, item) => {
