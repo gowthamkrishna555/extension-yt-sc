@@ -228,8 +228,8 @@ app.get('/transcript', async (req, res) => {
       return res.status(400).json({ error: "Video ID is required" });
     }
 
-    const yt = await import('youtube-transcript');
-    const transcriptArray = await yt.default.fetchTranscript(videoId);
+    const { fetchTranscript } = await import('youtube-transcript');
+    const transcriptArray = await fetchTranscript(videoId);
     const plainTranscript = transcriptArray.map(item => item.text).join(' ');
     
     const duration = transcriptArray.reduce((max, item) => {
