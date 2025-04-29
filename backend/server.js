@@ -229,8 +229,6 @@ app.get('/api/transcript', async (req, res) => {
       return res.status(400).json({ error: "Video ID is required" });
     }
 
-    console.log('ytTranscript export keys:', Object.keys(ytTranscript));
-
     const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
     const plainTranscript = transcriptArray.map(item => item.text).join(' ');
     
