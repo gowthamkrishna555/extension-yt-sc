@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const axios = require('axios');
-const ytTranscript = require('youtube-transcript');
+const { YoutubeTranscript } = require('youtube-transcript');
 require('dotenv').config();
 
 const app = express();
@@ -231,7 +231,7 @@ app.get('/api/transcript', async (req, res) => {
 
     console.log('ytTranscript export keys:', Object.keys(ytTranscript));
 
-    const transcriptArray = await ytTranscript.YoutubeTranscript.fetchTranscript(videoId);
+    const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
     const plainTranscript = transcriptArray.map(item => item.text).join(' ');
     
     const duration = transcriptArray.reduce((max, item) => {
