@@ -254,7 +254,11 @@ app.get('/transcript', async (req, res) => {
     console.log("Transcript response sent");
   } catch (error) {
     console.error('Error fetching transcript:', error);
-    res.status(500).json({ error: "Failed to fetch transcript" });
+    res.status(500).json({ 
+      error: "Failed to fetch transcript",
+      message: error.message,
+      stack: error.stack
+    });
   }
 });
 
