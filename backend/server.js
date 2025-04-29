@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const axios = require('axios');
-const { YoutubeTranscript } = require('youtube-transcript');
 require('dotenv').config();
 
 const app = express();
@@ -228,6 +227,9 @@ app.get('/api/transcript', async (req, res) => {
     if (!videoId) {
       return res.status(400).json({ error: "Video ID is required" });
     }
+
+    const { YoutubeTranscript } = require('youtube-transcript');
+
 
     const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
     const plainTranscript = transcriptArray.map(item => item.text).join(' ');
