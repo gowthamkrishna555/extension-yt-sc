@@ -221,7 +221,7 @@ app.post('/api/enhanced-analysis', async (req, res) => {
 
 // YouTube Transcript API Endpoints
 
-app.get('/api/transcript', async (req, res) => {
+app.get('/transcript', async (req, res) => {
   try {
     const videoId = req.query.videoId;
     if (!videoId) return res.status(400).json({ error: 'Video ID is required' });
