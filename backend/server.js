@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const axios = require('axios');
-const xml2js = require('xml2js');
+const { YoutubeTranscript } = require('youtube-transcript');
 require('dotenv').config();
 
 const app = express();
@@ -223,40 +223,36 @@ app.post('/api/enhanced-analysis', async (req, res) => {
 
 app.get('/api/transcript', async (req, res) => {
   try {
-    const videoId = req.query.videoId;
-    if (!videoId) return res.status(400).json({ error: 'Video ID is required' });
+    const { videoId } = req.query;
 
-    const lang = 'en'; // or dynamically detect
-    const url = `https://video.google.com/timedtext?lang=${lang}&v=${videoId}`;
-
-    const response = await axios.get(url);
-    const xml = response.data;
-
-    if (!xml || xml.trim() === '') {
-      return res.status(404).json({ error: 'Transcript not available' });
+    if (!videoId) {
+      return res.status(400).json({ error: "Video ID is required" });
     }
 
-    const parser = new xml2js.Parser();
-    const result = await parser.parseStringPromise(xml);
+    const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
 
-    const transcriptArray = result.transcript.text.map(item => ({
-      text: item._,
-      offset: parseFloat(item.$.start) * 1000,
-      duration: parseFloat(item.$.dur) * 1000,
-    }));
+    const plainTranscript = transcriptArray.map(item => item.text).join(' ');
+    
+    const duration = transcriptArray.reduce((max, item) => {
+      const end = item.offset + (item.duration || 0);
+      return end > max ? end : max;
+    }, 0);    
 
-    const plainTranscript = transcriptArray.map(i => i.text).join(' ');
-    const duration = Math.max(...transcriptArray.map(i => i.offset + i.duration));
+    
+    const lang = transcriptArray.length > 0 && transcriptArray[0].language ? 
+      transcriptArray[0].language : 'en';
 
     res.json({
-      videoId,
       transcript: plainTranscript,
       timestampedTranscript: transcriptArray,
-      duration,
-      lang
+      duration: duration,
+      lang: lang
     });
+
+    console.log("Transcript response sent");
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch transcript', message: error.message });
+    console.error('Error fetching transcript:', error);
+    res.status(500).json({ error: "Failed to fetch transcript" });
   }
 });
 
