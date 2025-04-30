@@ -59,7 +59,7 @@ if (!OPENAI_API_KEY) {
 }
 
 if (!GEMINI_API_KEY) {
-  console.error('Error: OpenAI API key not found. Please set it in .env file');
+  console.error('Error: GEMINI API key not found. Please set it in .env file');
 }
 
 // Spell Check API Endpoints
