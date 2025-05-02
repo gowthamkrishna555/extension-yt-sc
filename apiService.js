@@ -2,6 +2,8 @@
 window.ApiService = (function () {
   // Base URL for the spell check API service
   const API_BASE_URL = "https://extension-yt-sck.vercel.app/api";
+  const { convertTimestampToSeconds, formatTimestamp } = window.Utils;
+
 
   /**
    * Fetches full text correction from the server
@@ -222,7 +224,7 @@ async function fallbackClientTranscriptExtraction(videoId) {
           timestampedTranscript.push({
             text: text.trim(),
             startSeconds: start,
-            timestamp: formatTime(start),
+            timestamp: formatTimestamp(start),
             duration: duration,
             offset: start,
             language: captionTrack.languageCode || 'en'
@@ -244,26 +246,6 @@ async function fallbackClientTranscriptExtraction(videoId) {
   }
   
   throw new Error("No transcript found");
-}
-
-// Helper function to convert timestamp to seconds
-function convertTimestampToSeconds(timestamp) {
-  const parts = timestamp.split(':').map(Number);
-  
-  if (parts.length === 3) { // HH:MM:SS
-    return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  } else if (parts.length === 2) { // MM:SS
-    return parts[0] * 60 + parts[1];
-  } else {
-    return parts[0];
-  }
-}
-
-// Helper function to format seconds to time
-function formatTime(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
   async function fetchSummary({ transcript, videoTitle, existingTimestamps, duration, lang, timestampedTranscript  }) {

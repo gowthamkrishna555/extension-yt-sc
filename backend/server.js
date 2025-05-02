@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const axios = require('axios');
-const { formatTimestamp } = require('../utils');
+const { formatTimestamp, convertTimestampToSeconds } = require('../utils');
 const { YoutubeTranscript, YoutubeTranscriptError } = require('youtube-transcript');
 require('dotenv').config();
 
@@ -643,19 +643,6 @@ function parseStructuredResponse(response, videoDuration) {
   return structuredData;
 }
 
-function convertTimestampToSeconds(timestamp) {
-  const parts = timestamp.split(':').map(Number);
-  
-  if (parts.length === 3) { 
-    return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  } else if (parts.length === 2) { 
-    return parts[0] * 60 + parts[1];
-  } else {
-    return parts[0];
-  }
-}
-
-
 // Health check endpoints
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Spell check server is running' });
@@ -665,11 +652,6 @@ app.get('/ping', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Start the server
-// app.listen(port, () => {
-//   console.log(`Server running on port ${port}`);
-// });
-
 if (!isVercel) {
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
@@ -677,5 +659,4 @@ if (!isVercel) {
   });
 }
 
-// Make sure you export the app
 module.exports = app;

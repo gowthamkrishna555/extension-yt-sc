@@ -1,4 +1,4 @@
-// Enhance YouTube transcript extraction with more fallback methods
+const { formatTimestamp, convertTimestampToSeconds } = require('./utils');
 class YouTubeTranscript {
   constructor() {
     this.baseUrl = 'https://www.youtube.com';
@@ -56,7 +56,7 @@ class YouTubeTranscript {
           
           if (timestampElements[i]) {
             timestamp = timestampElements[i].textContent.trim();
-            startSeconds = this.convertTimestampToSeconds(timestamp);
+            startSeconds = convertTimestampToSeconds(timestamp);
           }
           
           transcriptSegments.push({
@@ -96,7 +96,7 @@ class YouTubeTranscript {
             
             if (timestamps[i]) {
               timestamp = timestamps[i].textContent.trim();
-              startSeconds = this.convertTimestampToSeconds(timestamp);
+              startSeconds = convertTimestampToSeconds(timestamp);
             }
             
             transcriptSegments.push({
@@ -305,7 +305,7 @@ class YouTubeTranscript {
         const text = node.textContent || '';
         const start = parseFloat(node.getAttribute('start') || '0');
         const duration = parseFloat(node.getAttribute('dur') || '0');
-        const timestamp = this.formatTimestamp(start);
+        const timestamp = formatTimestamp(start);
         
         transcript.push({
           text: text.trim(),
@@ -357,7 +357,7 @@ class YouTubeTranscript {
       transcript.push({
         text: text.trim(),
         startSeconds: start,
-        timestamp: this.formatTimestamp(start),
+        timestamp: formatTimestamp(start),
         duration: duration,
         offset: start,
         language: lang
@@ -371,30 +371,6 @@ class YouTubeTranscript {
     }
     
     return transcript;
-  }
-  
-  formatTimestamp(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    
-    if (hours > 0) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    } else {
-      return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-  }
-  
-  convertTimestampToSeconds(timestamp) {
-    const parts = timestamp.split(':').map(Number);
-    
-    if (parts.length === 3) { // HH:MM:SS
-      return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    } else if (parts.length === 2) { // MM:SS
-      return parts[0] * 60 + parts[1];
-    } else {
-      return parts[0];
-    }
   }
 }
 

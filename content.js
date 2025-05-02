@@ -300,8 +300,6 @@ function processDescription(descText) {
       timestamps.push({ time: normalizedTime, description: rawDesc });
     }
   }
-
-  console.log("Extracted timestamps:", timestamps);
   return timestamps.length > 0 ? timestamps : null;
 }
 
