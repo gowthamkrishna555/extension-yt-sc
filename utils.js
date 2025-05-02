@@ -17,8 +17,19 @@ function formatTimestamp(seconds) {
     return parts[0];
   }
   
-  module.exports = {
-    formatTimestamp,
-    convertTimestampToSeconds
-  };
+  // Node.js support
+  if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = {
+      formatTimestamp,
+      convertTimestampToSeconds
+    };
+  }
+  
+  // Browser support
+  if (typeof window !== 'undefined') {
+    window.Utils = {
+      formatTimestamp,
+      convertTimestampToSeconds
+    };
+  }
   

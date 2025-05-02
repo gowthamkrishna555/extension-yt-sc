@@ -1,4 +1,3 @@
-const { formatTimestamp, convertTimestampToSeconds } = require('./utils');
 class YouTubeTranscript {
   constructor() {
     this.baseUrl = 'https://www.youtube.com';
@@ -56,7 +55,7 @@ class YouTubeTranscript {
           
           if (timestampElements[i]) {
             timestamp = timestampElements[i].textContent.trim();
-            startSeconds = convertTimestampToSeconds(timestamp);
+            startSeconds = window.Utils.convertTimestampToSeconds(timestamp);
           }
           
           transcriptSegments.push({
@@ -96,7 +95,7 @@ class YouTubeTranscript {
             
             if (timestamps[i]) {
               timestamp = timestamps[i].textContent.trim();
-              startSeconds = convertTimestampToSeconds(timestamp);
+              startSeconds = window.Utils.convertTimestampToSeconds(timestamp);
             }
             
             transcriptSegments.push({
@@ -305,7 +304,7 @@ class YouTubeTranscript {
         const text = node.textContent || '';
         const start = parseFloat(node.getAttribute('start') || '0');
         const duration = parseFloat(node.getAttribute('dur') || '0');
-        const timestamp = formatTimestamp(start);
+        const timestamp = window.Utils.formatTimestamp(start);
         
         transcript.push({
           text: text.trim(),
@@ -357,7 +356,7 @@ class YouTubeTranscript {
       transcript.push({
         text: text.trim(),
         startSeconds: start,
-        timestamp: formatTimestamp(start),
+        timestamp: window.Utils.formatTimestamp(start),
         duration: duration,
         offset: start,
         language: lang

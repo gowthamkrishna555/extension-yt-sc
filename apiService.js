@@ -1,9 +1,7 @@
-// Create a namespace for API services
+
 window.ApiService = (function () {
   // Base URL for the spell check API service
   const API_BASE_URL = "https://extension-yt-sck.vercel.app/api";
-  const { convertTimestampToSeconds, formatTimestamp } = window.Utils;
-
 
   /**
    * Fetches full text correction from the server
@@ -167,7 +165,7 @@ async function fallbackClientTranscriptExtraction(videoId) {
       
       transcriptSegments.forEach((segment, index) => {
         const timestamp = timestamps[index]?.textContent.trim() || "00:00";
-        const seconds = convertTimestampToSeconds(timestamp);
+        const seconds = window.Utils.convertTimestampToSeconds(timestamp);
         
         timestampedTranscript.push({
           text: segment.textContent.trim(),
@@ -224,7 +222,7 @@ async function fallbackClientTranscriptExtraction(videoId) {
           timestampedTranscript.push({
             text: text.trim(),
             startSeconds: start,
-            timestamp: formatTimestamp(start),
+            timestamp: window.Utils.formatTimestamp(start),
             duration: duration,
             offset: start,
             language: captionTrack.languageCode || 'en'
