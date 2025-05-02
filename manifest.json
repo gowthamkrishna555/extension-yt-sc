@@ -20,7 +20,7 @@
   "content_scripts": [
     {
       "matches": ["https://www.youtube.com/*"],
-      "js": ["youtube-transcript.js", "content.js", "apiService.js"],
+      "js": ["youtube-transcript.js", "content.js","utils.js", "apiService.js"],
       "css": ["styles.css"]
     },
     {
@@ -31,6 +31,7 @@
         "styles.css"
       ],
       "js": [
+        "utils.js",    
         "domUtils.js",
         "apiService.js",
         "suggestionDropdown.js",
