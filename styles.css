@@ -561,7 +561,7 @@ body {
 
 .summarizer-share-btn {
   padding: 8px 12px;
-  background-color: #f3f4f6;
+  background-color: #4f88f9;
   border: none;
   border-radius: 6px;
   font-size: 13px;
@@ -570,7 +570,7 @@ body {
 }
 
 .summarizer-share-btn:hover {
-  background-color: #e5e7eb;
+  background-color: #0055ff;
 }
 
 .summarizer-mini-box {

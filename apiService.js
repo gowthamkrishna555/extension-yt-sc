@@ -104,7 +104,7 @@ window.ApiService = (function () {
     }
   }
 
-  // Update the fetchTranscript function in apiService.js to handle errors better
+  // added client side transcipt extraction i.e. youtube-transcript in fetchTranscript function in apiService.js to handle errors better
 async function fetchTranscript(videoId) {
   try {
     if (!videoId || !videoId.trim()) {
@@ -129,121 +129,39 @@ async function fetchTranscript(videoId) {
       throw new Error("Received empty transcript from server");
     }
     
-    return data; // { transcript, timestampedTranscript, duration, lang }
+    return data; 
   } catch (err) {
     console.error("Failed to fetch transcript:", err);
     
-    // Attempt fallback to client-side extraction if server fails
+    // Attempt fallback to YouTubeTranscript class if server fails
     try {
-      return await fallbackClientTranscriptExtraction(videoId);
+      const transcriptSegments = await window.YouTubeTranscript.fetchTranscript(videoId);
+      
+      if (transcriptSegments && transcriptSegments.length > 0) {
+        // Extract full transcript text from segments
+        const fullTranscript = transcriptSegments.map(segment => segment.text).join(' ');
+        
+        // Get video duration from the last segment if available
+        const duration = transcriptSegments[transcriptSegments.length - 1]?.totalDuration || 
+                        (transcriptSegments[transcriptSegments.length - 1]?.offset + 
+                         transcriptSegments[transcriptSegments.length - 1]?.duration) || 0;
+        
+        const lang = transcriptSegments[0]?.language || 'en';
+        
+        return {
+          transcript: fullTranscript,
+          timestampedTranscript: transcriptSegments,
+          duration: duration,
+          lang: lang
+        };
+      }
+      throw new Error("No transcript segments found");
     } catch (fallbackErr) {
-      console.error("Fallback transcript extraction also failed:", fallbackErr);
+      console.error("YouTubeTranscript extraction failed:", fallbackErr);
       alert("Unable to fetch video transcript. This video may not have captions available.");
       return null;
     }
   }
-}
-
-// Add this new fallback function for client-side transcript extraction
-async function fallbackClientTranscriptExtraction(videoId) {
-  console.log("Attempting client-side fallback transcript extraction");
-  
-  // Try to use native YouTube transcript viewer if available
-  const transcriptBtn = document.querySelector('button[aria-label*="transcript" i], [aria-label*="Transcript" i]');
-  if (transcriptBtn) {
-    transcriptBtn.click();
-    
-    // Wait for transcript to load
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const transcriptSegments = Array.from(document.querySelectorAll('.ytd-transcript-segment-renderer, .segment-text'));
-    if (transcriptSegments && transcriptSegments.length > 0) {
-      const transcript = transcriptSegments.map(segment => segment.textContent.trim()).join(' ');
-      
-      const timestampedTranscript = [];
-      const timestamps = document.querySelectorAll('.ytd-transcript-segment-timestamp-renderer, .segment-timestamp');
-      
-      transcriptSegments.forEach((segment, index) => {
-        const timestamp = timestamps[index]?.textContent.trim() || "00:00";
-        const seconds = window.Utils.convertTimestampToSeconds(timestamp);
-        
-        timestampedTranscript.push({
-          text: segment.textContent.trim(),
-          startSeconds: seconds,
-          timestamp: timestamp,
-          duration: 5, // Assume 5 seconds as default duration
-          offset: seconds,
-          language: 'en'
-        });
-      });
-      
-      // Close transcript panel
-      const closeBtn = document.querySelector('[aria-label="Close transcript"]');
-      if (closeBtn) closeBtn.click();
-      
-      return {
-        transcript,
-        timestampedTranscript,
-        duration: timestampedTranscript.length > 0 ? 
-          timestampedTranscript[timestampedTranscript.length - 1].offset + 5 : 0,
-        lang: 'en'
-      };
-    }
-  }
-  
-  // If no transcript found, try YouTube's player data
-  try {
-    const playerData = window.ytInitialPlayerResponse || {};
-    if (playerData.captions && 
-        playerData.captions.playerCaptionsTracklistRenderer && 
-        playerData.captions.playerCaptionsTracklistRenderer.captionTracks) {
-      
-      const captionTrack = playerData.captions.playerCaptionsTracklistRenderer.captionTracks[0];
-      if (captionTrack && captionTrack.baseUrl) {
-        const response = await fetch(captionTrack.baseUrl);
-        const xmlText = await response.text();
-        
-        // Parse XML captions
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        const textNodes = xmlDoc.getElementsByTagName('text');
-        
-        const timestampedTranscript = [];
-        let fullText = '';
-        
-        for (let i = 0; i < textNodes.length; i++) {
-          const node = textNodes[i];
-          const text = node.textContent || '';
-          const start = parseFloat(node.getAttribute('start') || '0');
-          const duration = parseFloat(node.getAttribute('dur') || '5');
-          
-          fullText += text + ' ';
-          
-          timestampedTranscript.push({
-            text: text.trim(),
-            startSeconds: start,
-            timestamp: window.Utils.formatTimestamp(start),
-            duration: duration,
-            offset: start,
-            language: captionTrack.languageCode || 'en'
-          });
-        }
-        
-        return {
-          transcript: fullText.trim(),
-          timestampedTranscript,
-          duration: timestampedTranscript.length > 0 ? 
-            timestampedTranscript[timestampedTranscript.length - 1].offset + 
-            timestampedTranscript[timestampedTranscript.length - 1].duration : 0,
-          lang: captionTrack.languageCode || 'en'
-        };
-      }
-    }
-  } catch (error) {
-    console.error("Error extracting transcript from player data:", error);
-  }
-  
-  throw new Error("No transcript found");
 }
 
   async function fetchSummary({ transcript, videoTitle, existingTimestamps, duration, lang, timestampedTranscript  }) {
@@ -274,7 +192,7 @@ async function fallbackClientTranscriptExtraction(videoId) {
       }
   
       const data = await response.json();
-      return data; // { title, summaryPoints, highlights }
+      return data; 
     } catch (err) {
       console.error("Failed to generate summary:", err);
       alert("Error generating summary. Please make sure the backend server is running.");
