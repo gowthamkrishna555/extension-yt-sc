@@ -3,14 +3,34 @@ class YouTubeTranscript {
     this.baseUrl = 'https://www.youtube.com';
   }
 
-async fetchTranscript(videoId) {
+  async fetchTranscript(videoId) {
     try {        
+      // First try to extract from the page
       const inPageTranscript = await this.extractTranscriptFromPage();
-      if (inPageTranscript) {
+      if (inPageTranscript && inPageTranscript.length > 0) {
+        console.log('Successfully extracted transcript from page');
         return inPageTranscript;
       }
       
-      return await this.fetchTranscriptFromApi(videoId);
+      // Then try various API methods
+      try {
+        return await this.fetchTranscriptFromApi(videoId);
+      } catch (apiError) {
+        console.error('API transcript fetch failed:', apiError);
+        
+        try {
+          return await this.extractFromVideoInfo(videoId);
+        } catch (videoInfoError) {
+          console.error('Video info transcript fetch failed:', videoInfoError);
+          
+          try {
+            return await this.fetchFromTimedText(videoId);
+          } catch (timedTextError) {
+            console.error('Timed text transcript fetch failed:', timedTextError);
+            throw new Error('All transcript extraction methods failed');
+          }
+        }
+      }
     } catch (error) {
       console.error('Error fetching transcript:', error);
       throw new Error('Failed to fetch transcript. This video might not have captions available.');
@@ -18,16 +38,93 @@ async fetchTranscript(videoId) {
   }
 
   async extractTranscriptFromPage() {
-    const transcriptElements = document.querySelectorAll('.ytd-transcript-segment-renderer');
-    if (transcriptElements.length > 0) {
-      const transcriptText = Array.from(transcriptElements)
-        .map(element => element.textContent.trim())
-        .join(' ');
+    try {
+      // Method 1: Try the transcript panel elements
+      const transcriptElements = document.querySelectorAll('.ytd-transcript-segment-renderer');
+      if (transcriptElements.length > 0) {
+        console.log('Found transcript panel elements');
+        const transcriptSegments = [];
+        
+        // Find timestamp elements
+        const timestampElements = document.querySelectorAll('.ytd-transcript-segment-timestamp-renderer');
+        
+        for (let i = 0; i < transcriptElements.length; i++) {
+          const text = transcriptElements[i].textContent.trim();
+          let timestamp = '00:00';
+          let startSeconds = 0;
+          
+          if (timestampElements[i]) {
+            timestamp = timestampElements[i].textContent.trim();
+            startSeconds = window.Utils.convertTimestampToSeconds(timestamp);
+          }
+          
+          transcriptSegments.push({
+            text,
+            startSeconds,
+            timestamp,
+            duration: 5, // Default duration
+            offset: startSeconds,
+            language: 'en'
+          });
+        }
+        
+        return transcriptSegments;
+      }
       
-      return transcriptText;
+      // Method 2: Try transcript button and extract
+      const transcriptButton = document.querySelector('button[aria-label*="transcript" i], [aria-label*="Transcript" i]');
+      if (transcriptButton) {
+        console.log('Found transcript button, clicking to open transcript panel');
+        transcriptButton.click();
+        
+        // Wait for transcript panel to load
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Try again with the panel open
+        const segments = document.querySelectorAll('.ytd-transcript-segment-renderer, .segment-text');
+        const timestamps = document.querySelectorAll('.ytd-transcript-segment-timestamp-renderer, .segment-timestamp');
+        
+        if (segments.length > 0) {
+          console.log('Found transcript segments after opening panel');
+          const transcriptSegments = [];
+          
+          for (let i = 0; i < segments.length; i++) {
+            const text = segments[i].textContent.trim();
+            let timestamp = '00:00';
+            let startSeconds = 0;
+            
+            if (timestamps[i]) {
+              timestamp = timestamps[i].textContent.trim();
+              startSeconds = window.Utils.convertTimestampToSeconds(timestamp);
+            }
+            
+            transcriptSegments.push({
+              text,
+              startSeconds,
+              timestamp,
+              duration: 5, // Default duration
+              offset: startSeconds,
+              language: 'en'
+            });
+          }
+          
+          // Close the transcript panel
+          const closeButton = document.querySelector('[aria-label="Close transcript"]');
+          if (closeButton) closeButton.click();
+          
+          return transcriptSegments;
+        }
+        
+        // Close the panel if we didn't find anything
+        const closeButton = document.querySelector('[aria-label="Close transcript"]');
+        if (closeButton) closeButton.click();
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error extracting transcript from page:', error);
+      return null;
     }
-    
-    return null;
   }
 
   async fetchTranscriptFromApi(videoId) {
@@ -35,19 +132,47 @@ async fetchTranscript(videoId) {
       const response = await fetch(`${this.baseUrl}/watch?v=${videoId}&gl=US`);
       const html = await response.text();
       
-      const playerConfigMatch = html.match(/"playerConfig":(.+?),"miniplayer/);
-      if (!playerConfigMatch) {
-        throw new Error('Could not find player config');
+      // Try multiple ways to extract the player config
+      const playerConfigMatches = [
+        html.match(/"playerConfig":(.+?),"miniplayer/),
+        html.match(/ytInitialPlayerResponse\s*=\s*({.+?});/),
+        html.match(/"player_response":"(.+?)"/),
+        html.match(/"captionTracks":(\[.+?\])/)
+      ];
+      
+      let playerConfig = null;
+      let captionsTrack = null;
+      
+      // Try each match pattern
+      for (const match of playerConfigMatches) {
+        if (match && match[1]) {
+          try {
+            // For the escaped JSON case
+            if (match[0].includes('player_response')) {
+              const jsonStr = match[1].replace(/\\(.)/g, '$1');
+              playerConfig = JSON.parse(jsonStr);
+              captionsTrack = this.findCaptionsTrack(playerConfig);
+              if (captionsTrack) break;
+            } else {
+              playerConfig = JSON.parse(match[1]);
+              captionsTrack = this.findCaptionsTrack(playerConfig);
+              if (captionsTrack) break;
+              
+              // Direct captions track array
+              if (match[0].includes('captionTracks')) {
+                const captionTracks = JSON.parse(match[1]);
+                if (captionTracks && captionTracks.length > 0) {
+                  captionsTrack = captionTracks[0].baseUrl;
+                  break;
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Failed to parse match:', e);
+          }
+        }
       }
       
-      let playerConfig;
-      try {
-        playerConfig = JSON.parse(playerConfigMatch[1]);
-      } catch (e) {
-        throw new Error('Failed to parse player config');
-      }
-      
-      const captionsTrack = this.findCaptionsTrack(playerConfig);
       if (!captionsTrack) {
         throw new Error('No captions track found for this video');
       }
@@ -58,8 +183,7 @@ async fetchTranscript(videoId) {
       return this.parseCaptionsXml(captionsXml);
     } catch (error) {
       console.error('Error in fetchTranscriptFromApi:', error);
-      
-      return this.extractFromVideoInfo(videoId);
+      throw error;
     }
   }
   
@@ -71,7 +195,20 @@ async fetchTranscript(videoId) {
       const data = await response.text();
       
       const params = new URLSearchParams(data);
-      const playerResponse = JSON.parse(params.get('player_response') || '{}');
+      let playerResponse;
+      
+      try {
+        playerResponse = JSON.parse(params.get('player_response') || '{}');
+      } catch (e) {
+        // Try to find a different pattern for the player response
+        const playerResponseMatch = data.match(/player_response=(.+?)&/);
+        if (playerResponseMatch) {
+          const decoded = decodeURIComponent(playerResponseMatch[1]);
+          playerResponse = JSON.parse(decoded);
+        } else {
+          throw new Error('Could not parse player response');
+        }
+      }
       
       const captionTracks = playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
       
@@ -89,19 +226,64 @@ async fetchTranscript(videoId) {
       return this.parseCaptionsXml(captionsXml, language);
     } catch (error) {
       console.error('Error extracting from video info:', error);
-      throw new Error('Failed to extract transcript');
+      throw error;
+    }
+  }
+  
+  async fetchFromTimedText(videoId) {
+    try {
+      // Try direct timedtext URL which sometimes works
+      const timedTextUrl = `${this.baseUrl}/api/timedtext?v=${videoId}&lang=en`;
+      const response = await fetch(timedTextUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Timed text API returned status ${response.status}`);
+      }
+      
+      const captionsXml = await response.text();
+      
+      if (!captionsXml || captionsXml.trim() === '' || !captionsXml.includes('<text')) {
+        throw new Error('No captions found in timed text API response');
+      }
+      
+      return this.parseCaptionsXml(captionsXml, 'en');
+    } catch (error) {
+      console.error('Error fetching from timed text API:', error);
+      throw error;
     }
   }
   
   findCaptionsTrack(playerConfig) {
     try {
+      // Method 1: modern player config
       const captions = playerConfig?.captions;
-      if (!captions) return null;
+      if (captions?.playerCaptionsTracklistRenderer?.captionTracks) {
+        const captionTracks = captions.playerCaptionsTracklistRenderer.captionTracks;
+        if (captionTracks && captionTracks.length > 0) {
+          return captionTracks[0].baseUrl;
+        }
+      }
       
-      const captionTracks = captions.playerCaptionsTracklistRenderer?.captionTracks;
-      if (!captionTracks || captionTracks.length === 0) return null;
+      // Method 2: direct captionTracks array
+      if (playerConfig?.captionTracks && playerConfig.captionTracks.length > 0) {
+        return playerConfig.captionTracks[0].baseUrl;
+      }
       
-      return captionTracks[0].baseUrl;
+      // Method 3: legacy structure
+      const args = playerConfig?.args;
+      if (args && args.caption_tracks) {
+        const tracks = args.caption_tracks.split(',');
+        if (tracks && tracks.length > 0) {
+          const track = tracks[0].split('&');
+          for (const param of track) {
+            if (param.startsWith('u=')) {
+              return decodeURIComponent(param.substring(2));
+            }
+          }
+        }
+      }
+      
+      return null;
     } catch (error) {
       console.error('Error finding captions track:', error);
       return null;
@@ -122,7 +304,7 @@ async fetchTranscript(videoId) {
         const text = node.textContent || '';
         const start = parseFloat(node.getAttribute('start') || '0');
         const duration = parseFloat(node.getAttribute('dur') || '0');
-        const timestamp = this.formatTimestampFromSeconds(start);
+        const timestamp = window.Utils.formatTimestamp(start);
         
         transcript.push({
           text: text.trim(),
@@ -143,19 +325,51 @@ async fetchTranscript(videoId) {
       return transcript;
     } catch (error) {
       console.error('Error parsing captions XML:', error);
-      throw new Error('Failed to parse captions');
+      
+      // Fallback to regex parsing if DOM parsing fails
+      try {
+        return this.parseXmlWithRegex(xml, lang);
+      } catch (regexError) {
+        throw new Error('Failed to parse captions');
+      }
     }
   }
-
-  formatTimestampFromSeconds(seconds) {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    if (hrs > 0) {
-      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    } else {
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
+  
+  parseXmlWithRegex(xml, lang = 'en') {
+    const transcript = [];
+    let totalDuration = 0;
+    
+    // Simple regex to extract text elements
+    const regex = /<text[^>]*start="([^"]*)"[^>]*dur="([^"]*)"[^>]*>([\s\S]*?)<\/text>/g;
+    
+    let match;
+    while ((match = regex.exec(xml)) !== null) {
+      const start = parseFloat(match[1]);
+      const duration = parseFloat(match[2]);
+      const text = match[3]
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+      
+      transcript.push({
+        text: text.trim(),
+        startSeconds: start,
+        timestamp: window.Utils.formatTimestamp(start),
+        duration: duration,
+        offset: start,
+        language: lang
+      });
+      
+      totalDuration = Math.max(totalDuration, start + duration);
     }
+    
+    if (transcript.length > 0) {
+      transcript[transcript.length - 1].totalDuration = totalDuration;
+    }
+    
+    return transcript;
   }
 }
 

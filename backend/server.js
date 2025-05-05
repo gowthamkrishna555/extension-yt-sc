@@ -2,7 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const axios = require('axios');
-const { YoutubeTranscript } = require('youtube-transcript');
+const { formatTimestamp, convertTimestampToSeconds } = require('../utils');
+const { YoutubeTranscript, YoutubeTranscriptError } = require('youtube-transcript');
 require('dotenv').config();
 
 const app = express();
@@ -220,7 +221,6 @@ app.post('/api/enhanced-analysis', async (req, res) => {
 });
 
 // YouTube Transcript API Endpoints
-
 app.get('/api/transcript', async (req, res) => {
   try {
     const { videoId } = req.query;
@@ -229,32 +229,184 @@ app.get('/api/transcript', async (req, res) => {
       return res.status(400).json({ error: "Video ID is required" });
     }
 
-    const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
-
-    const plainTranscript = transcriptArray.map(item => item.text).join(' ');
+    console.log(`Fetching transcript for video ID: ${videoId}`);
     
+    try {
+      // First try with the YoutubeTranscript library
+      const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
+      
+      const plainTranscript = transcriptArray.map(item => item.text).join(' ');
+      
+      const duration = transcriptArray.reduce((max, item) => {
+        const end = item.offset + (item.duration || 0);
+        return end > max ? end : max;
+      }, 0);
+      
+      const lang = transcriptArray.length > 0 && transcriptArray[0].language ? 
+        transcriptArray[0].language : 'en';
+
+      console.log(`Successfully fetched transcript via YoutubeTranscript library for ${videoId}`);
+      
+      return res.json({
+        transcript: plainTranscript,
+        timestampedTranscript: transcriptArray,
+        duration: duration,
+        lang: lang
+      });
+    } catch (error) {
+      // If YoutubeTranscript failed, try with the YouTube API approach
+      console.log(`YoutubeTranscript library failed: ${error.message}. Trying alternative method...`);
+      
+      // Attempting alternative YouTube data API method
+      const transcriptData = await fetchTranscriptAlternative(videoId);
+      
+      if (!transcriptData || !transcriptData.transcript) {
+        throw new Error("Could not fetch transcript with any method");
+      }
+      
+      console.log(`Successfully fetched transcript via alternative method for ${videoId}`);
+      
+      return res.json(transcriptData);
+    }
+  } catch (error) {
+    console.error('Error fetching transcript:', error);
+    res.status(500).json({ 
+      error: "Failed to fetch transcript. The video might not have captions available.",
+      details: error.message
+    });
+  }
+});
+
+// Add this new helper function for alternative transcript fetching
+async function fetchTranscriptAlternative(videoId) {
+  try {
+    console.log(`Attempting alternative transcript fetch for ${videoId}`);
+    
+    // Get video info using axios
+    const videoInfoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    const response = await axios.get(videoInfoUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9'
+      }
+    });
+    
+    const html = response.data;
+    
+    // Try to extract player response data
+    let playerResponse = null;
+    const playerResponseMatch = html.match(/"playerResponse":(\{.*?\}\}\})/);
+    
+    if (playerResponseMatch && playerResponseMatch[1]) {
+      try {
+        playerResponse = JSON.parse(playerResponseMatch[1].replace(/\\x([0-9A-F]{2})/ig, (_, hex) => {
+          return String.fromCharCode(parseInt(hex, 16));
+        }));
+      } catch (e) {
+        console.error('Failed to parse player response', e);
+      }
+    }
+    
+    if (!playerResponse) {
+      const ytInitialPlayerMatch = html.match(/ytInitialPlayerResponse\s*=\s*({.+?});/);
+      if (ytInitialPlayerMatch && ytInitialPlayerMatch[1]) {
+        try {
+          playerResponse = JSON.parse(ytInitialPlayerMatch[1]);
+        } catch (e) {
+          console.error('Failed to parse ytInitialPlayerResponse', e);
+        }
+      }
+    }
+    
+    if (!playerResponse) {
+      throw new Error('Could not extract player data from YouTube page');
+    }
+    
+    // Extract captions data
+    let captionTracks = [];
+    
+    if (playerResponse.captions && 
+        playerResponse.captions.playerCaptionsTracklistRenderer && 
+        playerResponse.captions.playerCaptionsTracklistRenderer.captionTracks) {
+      captionTracks = playerResponse.captions.playerCaptionsTracklistRenderer.captionTracks;
+    }
+    
+    if (captionTracks.length === 0) {
+      throw new Error('No captions found for this video');
+    }
+    
+    // Choose the first caption track (usually English or default language)
+    const captionTrack = captionTracks[0];
+    const captionUrl = captionTrack.baseUrl;
+    const language = captionTrack.languageCode || 'en';
+    
+    // Fetch the captions XML
+    const captionsResponse = await axios.get(captionUrl);
+    const captionsXml = captionsResponse.data;
+    
+    // Parse the captions XML
+    const transcriptArray = parseCaptionsXml(captionsXml, language);
+    
+    // Calculate total duration
     const duration = transcriptArray.reduce((max, item) => {
       const end = item.offset + (item.duration || 0);
       return end > max ? end : max;
-    }, 0);    
-
+    }, 0);
     
-    const lang = transcriptArray.length > 0 && transcriptArray[0].language ? 
-      transcriptArray[0].language : 'en';
-
-    res.json({
+    // Join all text segments for plain transcript
+    const plainTranscript = transcriptArray.map(item => item.text).join(' ');
+    
+    return {
       transcript: plainTranscript,
       timestampedTranscript: transcriptArray,
       duration: duration,
-      lang: lang
-    });
-
-    console.log("Transcript response sent");
+      lang: language
+    };
   } catch (error) {
-    console.error('Error fetching transcript:', error);
-    res.status(500).json({ error: "Failed to fetch transcript" });
+    console.error('Alternative transcript fetch failed:', error);
+    throw error;
   }
-});
+}
+
+// Add this helper function to parse captions XML
+function parseCaptionsXml(xml, lang = 'en') {
+  try {
+    // Use a simple regex approach to extract text and timing information
+    const textRegex = /<text start="([\d\.]+)" dur="([\d\.]+)".*?>(.*?)<\/text>/g;
+    const transcript = [];
+    let totalDuration = 0;
+    let match;
+    
+    while ((match = textRegex.exec(xml)) !== null) {
+      const start = parseFloat(match[1]);
+      const duration = parseFloat(match[2]);
+      const text = match[3]
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/<\/?[^>]+(>|$)/g, ""); // Remove any XML tags
+      
+      transcript.push({
+        text: text.trim(),
+        startSeconds: start,
+        timestamp: formatTimestamp(start),
+        duration: duration,
+        offset: start,
+        language: lang
+      });
+      
+      totalDuration = Math.max(totalDuration, start + duration);
+    }
+    
+    return transcript;
+  } catch (error) {
+    console.error('Error parsing captions XML:', error);
+    throw new Error('Failed to parse captions XML');
+  }
+}
+
 
 app.post('/api/summarize', async (req, res) => {
   console.log("Received POST request to summarize"); 
@@ -491,30 +643,6 @@ function parseStructuredResponse(response, videoDuration) {
   return structuredData;
 }
 
-function convertTimestampToSeconds(timestamp) {
-  const parts = timestamp.split(':').map(Number);
-  
-  if (parts.length === 3) { 
-    return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  } else if (parts.length === 2) { 
-    return parts[0] * 60 + parts[1];
-  } else {
-    return parts[0];
-  }
-}
-
-function formatTimestamp(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-  
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  } else {
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-  }
-}
-
 // Health check endpoints
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Spell check server is running' });
@@ -524,11 +652,6 @@ app.get('/ping', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Start the server
-// app.listen(port, () => {
-//   console.log(`Server running on port ${port}`);
-// });
-
 if (!isVercel) {
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
@@ -536,5 +659,4 @@ if (!isVercel) {
   });
 }
 
-// Make sure you export the app
 module.exports = app;
