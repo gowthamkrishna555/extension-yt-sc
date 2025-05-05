@@ -76,6 +76,9 @@ class YouTubeTranscript {
       if (transcriptButton) {
         console.log('Found transcript button, clicking to open transcript panel');
         transcriptButton.click();
+
+        const panel = document.querySelector('#segments-container');
+        panel.scrollTop = panel.scrollHeight;
         
         // Wait for transcript panel to load
         await new Promise(resolve => setTimeout(resolve, 1000));
